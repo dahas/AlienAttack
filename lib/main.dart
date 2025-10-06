@@ -71,7 +71,7 @@ class MyGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
 
 class Player extends SpriteAnimationComponent with HasGameReference<MyGame>, CollisionCallbacks {
   Player() :
-        super(size: Vector2(50, 100), anchor: Anchor.center);
+        super(size: Vector2(60, 100), anchor: Anchor.center);
 
   bool moveLeft = false;
   bool moveRight = false;
