@@ -192,17 +192,25 @@ class PlayerExplosion extends SpriteAnimationComponent with HasGameReference<MyG
   }
 }
 
-class Bullet extends CircleComponent with HasGameReference<MyGame>, CollisionCallbacks {
-  Bullet()
-      : super(
-    radius: 5,
-    paint: Paint()..color = const Color(0xFFFFA600),
-    anchor: Anchor.center,
-  );
+class Bullet extends SpriteAnimationComponent with HasGameReference<MyGame>, CollisionCallbacks {
+  Bullet() : super(size: Vector2(10, 25), anchor: Anchor.center);
+
+  final speed = 400;
 
   @override
   Future<void> onLoad() async {
     super.onLoad();
+
+    animation = await game.loadSpriteAnimation(
+      'bullet.png',
+      SpriteAnimationData.sequenced(
+        amount: 5,
+        loop: true,
+        stepTime: .1,
+        textureSize: Vector2(35, 90),
+      ),
+    );
+
     add(
       RectangleHitbox(
         collisionType: CollisionType.passive,
@@ -216,11 +224,41 @@ class Bullet extends CircleComponent with HasGameReference<MyGame>, CollisionCal
 
     position.y += dt * -500;
 
-    if (position.y < -game.size.y/2) {
+    if (position.y < 0) {
       removeFromParent();
     }
   }
 }
+
+// class Bullet extends CircleComponent with HasGameReference<MyGame>, CollisionCallbacks {
+//   Bullet()
+//       : super(
+//     radius: 5,
+//     paint: Paint()..color = const Color(0xFFFFA600),
+//     anchor: Anchor.center,
+//   );
+//
+//   @override
+//   Future<void> onLoad() async {
+//     super.onLoad();
+//     add(
+//       RectangleHitbox(
+//         collisionType: CollisionType.passive,
+//       ),
+//     );
+//   }
+//
+//   @override
+//   void update(double dt) {
+//     super.update(dt);
+//
+//     position.y += dt * -500;
+//
+//     if (position.y < -game.size.y/2) {
+//       removeFromParent();
+//     }
+//   }
+// }
 
 class Enemy extends SpriteAnimationComponent with HasGameReference<MyGame>, CollisionCallbacks {
   Enemy() :

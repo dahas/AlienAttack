@@ -43,4 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-/assets/images/craftpix-781145-free-space-shooter-game-objects/
+/assets/images/missiles/
+/assets/images/flames/
+/assets/images/enemy-spaceship/
