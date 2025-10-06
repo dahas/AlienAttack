@@ -12,19 +12,40 @@ import 'package:flutter/widgets.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/parallax.dart';
 
+import 'ovderlays/hud.dart';
+
 void main() {
   runApp(
     GameWidget(
-      game: MyGame(),
+      game: SpaceShooter(),
     ),
   );
 }
 
-class MyGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
+class SpaceShooter extends FlameGame with KeyboardEvents, HasCollisionDetection {
   late Player player;
+
+  int starsCollected = 25;
+  int health = 3;
 
   @override
   Future<void> onLoad() async {
+    await images.loadAll([
+      'player.png',
+      'bullet.png',
+      'enemy.png',
+      'heart_half.png',
+      'heart.png',
+      'star.png',
+      'explosion.png',
+      'stars_0.png',
+      'stars_1.png',
+      'stars_2.png',
+      'missile1.png',
+    ]);
+
+    player = Player();
+
     final parallax = await loadParallaxComponent(
       [
         ParallaxImageData('stars_0.png'),
@@ -37,7 +58,6 @@ class MyGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
       velocityMultiplierDelta: Vector2(0, 2),
     );
     add(parallax);
-    player = Player();
     add(player);
     add(
       SpawnComponent(
@@ -49,6 +69,9 @@ class MyGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
         random: Random()
       ),
     );
+
+    camera.viewfinder.anchor = Anchor.topLeft;
+    camera.viewport.add(Hud());
   }
 
   @override
@@ -69,7 +92,7 @@ class MyGame extends FlameGame with KeyboardEvents, HasCollisionDetection {
   }
 }
 
-class Player extends SpriteAnimationComponent with HasGameReference<MyGame>, CollisionCallbacks {
+class Player extends SpriteAnimationComponent with HasGameReference<SpaceShooter>, CollisionCallbacks {
   Player() :
         super(size: Vector2(60, 100), anchor: Anchor.center);
 
@@ -160,16 +183,16 @@ class Player extends SpriteAnimationComponent with HasGameReference<MyGame>, Col
     super.onCollisionStart(intersectionPoints, other);
     removeFromParent();
     game.add(PlayerExplosion(position: position));
+    game.health--;
   }
 }
 
-class PlayerExplosion extends SpriteAnimationComponent with HasGameReference<MyGame> {
+class PlayerExplosion extends SpriteAnimationComponent with HasGameReference<SpaceShooter> {
   PlayerExplosion({super.position})
       : super(size: Vector2.all(120), anchor: Anchor.center);
 
   @override
   Future<void> onLoad() async {
-
     animation = await game.loadSpriteAnimation(
       'explosion.png',
       SpriteAnimationData.sequenced(
@@ -185,14 +208,16 @@ class PlayerExplosion extends SpriteAnimationComponent with HasGameReference<MyG
 
   void respawn() {
     removeFromParent();
-    final player = game.player;
-    player.position = Vector2(game.size.x/2, game.size.y/2);
-    player.startInvincibility();
-    game.add(player);
+    if(game.health > 0) {
+      final player = game.player;
+      player.position = Vector2(game.size.x/2, game.size.y/2);
+      player.startInvincibility();
+      game.add(player);
+    }
   }
 }
 
-class Bullet extends SpriteAnimationComponent with HasGameReference<MyGame>, CollisionCallbacks {
+class Bullet extends SpriteAnimationComponent with HasGameReference<SpaceShooter>, CollisionCallbacks {
   Bullet() : super(size: Vector2(10, 25), anchor: Anchor.center);
 
   final speed = 400;
@@ -260,7 +285,7 @@ class Bullet extends SpriteAnimationComponent with HasGameReference<MyGame>, Col
 //   }
 // }
 
-class Enemy extends SpriteAnimationComponent with HasGameReference<MyGame>, CollisionCallbacks {
+class Enemy extends SpriteAnimationComponent with HasGameReference<SpaceShooter>, CollisionCallbacks {
   Enemy() :
     super(size: Vector2.all(50));
 
@@ -315,7 +340,7 @@ class Enemy extends SpriteAnimationComponent with HasGameReference<MyGame>, Coll
   }
 }
 
-class EnemyExplosion extends SpriteAnimationComponent with HasGameReference<MyGame> {
+class EnemyExplosion extends SpriteAnimationComponent with HasGameReference<SpaceShooter> {
   EnemyExplosion({super.position})
       : super(size: Vector2.all(60), anchor: Anchor.center);
 
@@ -343,7 +368,7 @@ class EnemyExplosion extends SpriteAnimationComponent with HasGameReference<MyGa
   }
 }
 
-class Missile1 extends SpriteAnimationComponent with HasGameReference<MyGame>, CollisionCallbacks {
+class Missile1 extends SpriteAnimationComponent with HasGameReference<SpaceShooter>, CollisionCallbacks {
   Missile1() : super(size: Vector2(25, 50), anchor: Anchor.center);
 
   final speed = 400;
