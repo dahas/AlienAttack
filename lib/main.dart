@@ -18,15 +18,158 @@ void main() {
   runApp(
     GameWidget(
       game: SpaceShooter(),
+      overlayBuilderMap: {
+        'StartMenu': (BuildContext context, SpaceShooter game) {
+          return Center(
+            child: Container(
+              width: 320,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white24, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black54,
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "🚀 Alien Attack 🚀",
+                    style: TextStyle(
+                      fontSize: 28,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Controls:\n\n"
+                        "W = up\nA = left\nS = down\nD = right\nSpace = shoot\n\n"
+                        "Mission: Survive and beat the boss at the end!",
+                    style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.4),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.lightGreenAccent.shade400.withValues(alpha: 0.8),
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () {
+                      game.overlays.remove('StartMenu');
+                      game.start();
+                    },
+                    child: const Text(
+                      'Play',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+
+        'GameOver': (BuildContext context, SpaceShooter game) {
+          return Center(
+            child: Container(
+              width: 320,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white24, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black54,
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "💥 Game over! 💥",
+                    style: TextStyle(
+                      fontSize: 28,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.lightGreenAccent.shade400.withValues(alpha: 0.8),
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () {
+                          game.overlays.remove('GameOver');
+                          game.start();
+                        },
+                        child: const Text(
+                          'Try again',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal.shade400.withValues(alpha: 0.8),
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () {
+                          game.overlays.remove('GameOver');
+                          game.quit();
+                        },
+                        child: const Text(
+                          'Quit',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          );
+        },
+      },
     ),
   );
 }
 
 class SpaceShooter extends FlameGame with KeyboardEvents, HasCollisionDetection {
   late Player player;
+  late SpawnComponent enemySpawner;
 
-  int starsCollected = 25;
-  int health = 3;
+  int starsCollected = 0;
+  int lifes = 3;
+  bool started = false;
 
   @override
   Future<void> onLoad() async {
@@ -34,8 +177,8 @@ class SpaceShooter extends FlameGame with KeyboardEvents, HasCollisionDetection 
       'player.png',
       'bullet.png',
       'enemy.png',
-      'heart_half.png',
-      'heart.png',
+      'life_lost.png',
+      'life.png',
       'star.png',
       'explosion.png',
       'stars_0.png',
@@ -45,6 +188,8 @@ class SpaceShooter extends FlameGame with KeyboardEvents, HasCollisionDetection 
     ]);
 
     player = Player();
+
+    overlays.add("StartMenu");
 
     final parallax = await loadParallaxComponent(
       [
@@ -58,17 +203,6 @@ class SpaceShooter extends FlameGame with KeyboardEvents, HasCollisionDetection 
       velocityMultiplierDelta: Vector2(0, 2),
     );
     add(parallax);
-    add(player);
-    add(
-      SpawnComponent(
-        factory: (index) {
-          return Enemy();
-        },
-        period: 1,
-        area: Rectangle.fromLTWH(40, 0, size.x-80, 0),
-        random: Random()
-      ),
-    );
 
     camera.viewfinder.anchor = Anchor.topLeft;
     camera.viewport.add(Hud());
@@ -90,11 +224,41 @@ class SpaceShooter extends FlameGame with KeyboardEvents, HasCollisionDetection 
     player.shooting = keysPressed.contains(LogicalKeyboardKey.space);
     return KeyEventResult.handled;
   }
+
+  void start() {
+    started = true;
+    starsCollected = 0;
+    lifes = 3;
+
+    removeWhere((component) => component is! ParallaxComponent);
+
+    player.position = Vector2(size.x / 2, size.y - 100);
+    if (!player.isMounted) add(player);
+
+    enemySpawner = SpawnComponent(
+      factory: (index) => Enemy(),
+      period: 1,
+      area: Rectangle.fromLTWH(40, 0, size.x - 80, 0),
+      random: Random(),
+    );
+    add(enemySpawner);
+  }
+
+  void quit() {
+    started = false;
+    starsCollected = 0;
+    lifes = 3;
+
+    removeWhere((component) => component is! ParallaxComponent);
+
+    overlays.add("StartMenu");
+  }
+
 }
 
 class Player extends SpriteAnimationComponent with HasGameReference<SpaceShooter>, CollisionCallbacks {
   Player() :
-        super(size: Vector2(60, 100), anchor: Anchor.center);
+        super(size: Vector2(50, 80), anchor: Anchor.center);
 
   bool moveLeft = false;
   bool moveRight = false;
@@ -118,7 +282,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<SpaceShooter
       ),
     );
 
-    position = game.size / 2;
+    position = Vector2(game.size.x / 2, game.size.y - 100);
 
     add(CircleHitbox());
   }
@@ -183,7 +347,8 @@ class Player extends SpriteAnimationComponent with HasGameReference<SpaceShooter
     super.onCollisionStart(intersectionPoints, other);
     removeFromParent();
     game.add(PlayerExplosion(position: position));
-    game.health--;
+
+    game.lifes--;
   }
 }
 
@@ -208,11 +373,15 @@ class PlayerExplosion extends SpriteAnimationComponent with HasGameReference<Spa
 
   void respawn() {
     removeFromParent();
-    if(game.health > 0) {
+    if(game.lifes > 0) {
       final player = game.player;
       player.position = Vector2(game.size.x/2, game.size.y/2);
       player.startInvincibility();
       game.add(player);
+    } else {
+      Future.delayed(const Duration(seconds: 1), () {
+        game.overlays.add("GameOver");
+      });
     }
   }
 }

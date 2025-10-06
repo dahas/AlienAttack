@@ -66,8 +66,8 @@ flutter:
     - assets/images/stars_2.png
     - assets/images/missile1.png
     - assets/images/star.png
-    - assets/images/heart.png
-    - assets/images/heart_half.png
+    - assets/images/life.png
+    - assets/images/life_lost.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

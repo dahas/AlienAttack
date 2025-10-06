@@ -1,7 +1,7 @@
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import '../main.dart';
-import 'heart.dart';
+import 'player_lifes.dart';
 
 class Hud extends PositionComponent with HasGameReference<SpaceShooter> {
   Hud({
@@ -45,8 +45,8 @@ class Hud extends PositionComponent with HasGameReference<SpaceShooter> {
     for (var i = 1; i <= 3; i++) {
       positionX += 25;
       await add(
-        HeartHealthComponent(
-          heartNumber: i,
+        PlayerLifesComponent(
+          lifesNumber: i,
           position: Vector2(positionX, 5),
           size: Vector2(20, 32),
         ),
