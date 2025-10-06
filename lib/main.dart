@@ -226,6 +226,8 @@ class Enemy extends SpriteAnimationComponent with HasGameReference<MyGame>, Coll
   Enemy() :
     super(size: Vector2.all(50));
 
+  final random = Random();
+
   static const spriteHeight = 50.0;
   final int speed = 100;
 
@@ -244,6 +246,12 @@ class Enemy extends SpriteAnimationComponent with HasGameReference<MyGame>, Coll
     );
 
     add(RectangleHitbox());
+
+    if (random.nextDouble() < 0.3) {
+      final rocket = Missile1()
+        ..position = Vector2(position.x, position.y + 30); // Starte am Enemy
+      game.add(rocket);
+    }
   }
 
   @override
@@ -297,3 +305,40 @@ class EnemyExplosion extends SpriteAnimationComponent with HasGameReference<MyGa
   }
 }
 
+class Missile1 extends SpriteAnimationComponent with HasGameReference<MyGame>, CollisionCallbacks {
+  Missile1() : super(size: Vector2(25, 50), anchor: Anchor.center);
+
+  final speed = 400;
+
+  @override
+  Future<void> onLoad() async {
+    super.onLoad();
+
+    animation = await game.loadSpriteAnimation(
+      'missile1.png',
+      SpriteAnimationData.sequenced(
+        amount: 5,
+        loop: true,
+        stepTime: .1,
+        textureSize: Vector2(100, 375),
+      ),
+    );
+
+    add(
+      RectangleHitbox(
+        collisionType: CollisionType.passive,
+      ),
+    );
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+
+    position.y -= dt * -speed;
+
+    if (position.y > game.size.y) {
+      removeFromParent();
+    }
+  }
+}
