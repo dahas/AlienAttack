@@ -1,6 +1,7 @@
-import 'dart:math';
 import 'dart:async';
+import 'dart:math';
 import 'package:flame/components.dart';
+import 'package:flame/experimental.dart';
 import '../main.dart';
 
 class EnemySpawner extends Component with HasGameReference<AlienAttack> {
@@ -21,15 +22,14 @@ class EnemySpawner extends Component with HasGameReference<AlienAttack> {
   }
 
   void spawnWave() {
-    for (int i = 0; i < remainingEnemies; i++) {
-      final x = _rand.nextDouble() * game.size.x;
-      final y = -50.0 - _rand.nextDouble() * 200;
-      final enemy = Enemy()
-        ..position = Vector2(x, y)
-        // ..onDestroyed = () => onEnemyDestroyed()
-      ;
-      game.add(enemy);
-    }
+    game.add(SpawnComponent(
+      factory: (index) {
+        return Enemy();
+      },
+      period: 1,
+      area: Rectangle.fromLTWH(40, 0, game.size.x - 80, 0),
+      random: _rand,
+    ));
   }
 
   void onEnemyDestroyed() {

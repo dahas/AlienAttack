@@ -2,7 +2,6 @@ import 'dart:math';
 import 'dart:async';
 import 'package:flame/collisions.dart';
 import 'package:flame/effects.dart';
-import 'package:flame/experimental.dart';
 import 'package:flame/input.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
@@ -19,74 +18,156 @@ void main() {
       game: AlienAttack(),
       overlayBuilderMap: {
         'StartMenu': (BuildContext context, AlienAttack game) {
-          return Center(
-            child: Container(
-              width: 320,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white24, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black54,
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "🚀 Alien Attack 🚀",
-                    style: TextStyle(
-                      fontSize: 28,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+          return Visibility(
+            visible: !game.paused,
+            child: Center(
+              child: Container(
+                width: 320,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: .6),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white24, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black54,
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    "Controls:\n\n"
-                        "W = up\nA = left\nS = down\nD = right\nSpace = shoot\n\n"
-                        "Mission: Survive the enemy waves and defeat the final boss!",
-                    style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.4),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.lightGreenAccent.shade400.withValues(alpha: 0.8),
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "🚀 Alien Attack 🚀",
+                      style: TextStyle(
+                        fontSize: 28,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      "Controls:\n\n"
+                          "W = up\nA = left\nS = down\nD = right\nSpace = shoot\nP = pause\n\n"
+                          "Mission: Survive the enemy waves and defeat the final boss!",
+                      style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.4),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.lightGreenAccent.shade400.withValues(alpha: 0.8),
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        game.overlays.remove('StartMenu');
+                        game.start();
+                      },
+                      child: const Text(
+                        'Play',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
-                    onPressed: () {
-                      game.overlays.remove('StartMenu');
-                      game.start();
-                    },
-                    child: const Text(
-                      'Play',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+            )
           );
         },
-
         'GameOver': (BuildContext context, AlienAttack game) {
+          return Visibility(
+            visible: !game.paused,
+            child: Center(
+              child: Container(
+                width: 320,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: .6),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white24, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black54,
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "💥 Game over! 💥",
+                      style: TextStyle(
+                        fontSize: 28,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.lightGreenAccent.shade400.withValues(alpha: 0.8),
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            game.overlays.remove('GameOver');
+                            game.start();
+                          },
+                          child: const Text(
+                            'Try again',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.teal.shade400.withValues(alpha: 0.8),
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            game.overlays.remove('GameOver');
+                            game.quit();
+                          },
+                          child: const Text(
+                            'Quit',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            )
+          );
+        },
+        'Paused': (BuildContext context, AlienAttack game) {
           return Center(
             child: Container(
               width: 320,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
+                color: Colors.black.withValues(alpha: .6),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.white24, width: 2),
                 boxShadow: [
@@ -101,7 +182,7 @@ void main() {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    "💥 Game over! 💥",
+                    "☕ Paused ☕",
                     style: TextStyle(
                       fontSize: 28,
                       color: Colors.white,
@@ -109,49 +190,54 @@ void main() {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.lightGreenAccent.shade400.withValues(alpha: 0.8),
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: () {
-                          game.overlays.remove('GameOver');
-                          game.start();
-                        },
-                        child: const Text(
-                          'Try again',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal.shade400.withValues(alpha: 0.8),
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: () {
-                          game.overlays.remove('GameOver');
-                          game.quit();
-                        },
-                        child: const Text(
-                          'Quit',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                  )
+                  const SizedBox(height: 12),
+                  Text(
+                    "Press P to continue ...",
+                    style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.4),
+                    textAlign: TextAlign.center
+                  ),
+                  // Row(
+                  //   mainAxisSize: MainAxisSize.max,
+                  //   children: [
+                  //     ElevatedButton(
+                  //       style: ElevatedButton.styleFrom(
+                  //         backgroundColor: Colors.lightGreenAccent.shade400.withValues(alpha: 0.8),
+                  //         foregroundColor: Colors.black,
+                  //         padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                  //         shape: RoundedRectangleBorder(
+                  //           borderRadius: BorderRadius.circular(12),
+                  //         ),
+                  //       ),
+                  //       onPressed: () {
+                  //         game.overlays.remove('GameOver');
+                  //         game.start();
+                  //       },
+                  //       child: const Text(
+                  //         'Try again',
+                  //         style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  //       ),
+                  //     ),
+                  //     SizedBox(width: 8),
+                  //     ElevatedButton(
+                  //       style: ElevatedButton.styleFrom(
+                  //         backgroundColor: Colors.teal.shade400.withValues(alpha: 0.8),
+                  //         foregroundColor: Colors.black,
+                  //         padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                  //         shape: RoundedRectangleBorder(
+                  //           borderRadius: BorderRadius.circular(12),
+                  //         ),
+                  //       ),
+                  //       onPressed: () {
+                  //         game.overlays.remove('GameOver');
+                  //         game.quit();
+                  //       },
+                  //       child: const Text(
+                  //         'Quit',
+                  //         style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  //       ),
+                  //     ),
+                  //   ],
+                  // )
                 ],
               ),
             ),
@@ -228,6 +314,11 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
     player.moveUp = keysPressed.contains(LogicalKeyboardKey.keyW);
     player.moveDown = keysPressed.contains(LogicalKeyboardKey.keyS);
     player.shooting = keysPressed.contains(LogicalKeyboardKey.space);
+
+    if (event is KeyDownEvent && keysPressed.contains(LogicalKeyboardKey.keyP)) {
+      pause();
+    }
+
     return KeyEventResult.handled;
   }
 
@@ -235,8 +326,6 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
     started = true;
     starsCollected = 0;
     lifes = 3;
-
-    // levelManager.startLevel(1);
 
     clear();
 
@@ -246,13 +335,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
     player.position = Vector2(size.x / 2, size.y - 100);
     if (!player.isMounted) add(player);
 
-    enemySpawner = SpawnComponent(
-      factory: (index) => Enemy(),
-      period: 1,
-      area: Rectangle.fromLTWH(40, 0, size.x - 80, 0),
-      random: Random(),
-    );
-    add(enemySpawner);
+    levelManager.startLevel(1);
   }
 
   void quit() {
@@ -275,6 +358,15 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
 
     for (final c in toRemove) {
       c.removeFromParent();
+    }
+  }
+
+  void pause() {
+    paused = !paused; // Toggle
+    if(paused) {
+      overlays.add("Paused");
+    } else {
+      overlays.remove("Paused");
     }
   }
 
@@ -415,7 +507,7 @@ class PlayerExplosion extends SpriteAnimationComponent with HasGameReference<Ali
 }
 
 class Bullet extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
-  Bullet() : super(size: Vector2(35, 40), anchor: Anchor.center);
+  Bullet() : super(size: Vector2(20, 35), anchor: Anchor.center);
 
   final speed = 400;
 
@@ -429,7 +521,7 @@ class Bullet extends SpriteAnimationComponent with HasGameReference<AlienAttack>
         amount: 5,
         loop: true,
         stepTime: .1,
-        textureSize: Vector2(141, 177),
+        textureSize: Vector2(35, 68),
       ),
     );
 
@@ -479,7 +571,7 @@ class Enemy extends SpriteAnimationComponent with HasGameReference<AlienAttack>,
 
     if (random.nextDouble() < 0.3) {
       final rocket = Missile1()
-        ..position = Vector2(position.x, position.y + 30); // Starte am Enemy
+        ..position = Vector2(position.x, position.y + 30);
       game.add(rocket);
     }
   }
