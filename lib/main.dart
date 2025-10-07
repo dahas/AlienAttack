@@ -8,10 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/parallax.dart';
-
+import 'core/level_manager.dart';
 import 'overlays/hud.dart';
 
 void main() {
@@ -164,12 +163,15 @@ void main() {
 }
 
 class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
+  late LevelManager levelManager;
   late Player player;
   late SpawnComponent enemySpawner;
 
   int starsCollected = 0;
   int lifes = 3;
   bool started = false;
+
+  double time = 0;
 
   @override
   Future<void> onLoad() async {
@@ -186,6 +188,9 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
       'stars_2.png',
       'missile1.png',
     ]);
+
+    levelManager = LevelManager();
+    add(levelManager);
 
     player = Player();
 
@@ -213,6 +218,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
     super.update(dt);
     player.move(dt);
     player.shoot(dt);
+    if(started) time += dt;
   }
 
   @override
@@ -268,6 +274,10 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
     for (final c in toRemove) {
       c.removeFromParent();
     }
+  }
+
+  double elapsedTime() {
+    return time;
   }
 }
 
@@ -395,6 +405,7 @@ class PlayerExplosion extends SpriteAnimationComponent with HasGameReference<Ali
       game.add(player);
     } else {
       Future.delayed(const Duration(seconds: 1), () {
+        game.started = false;
         game.overlays.add("GameOver");
       });
     }
