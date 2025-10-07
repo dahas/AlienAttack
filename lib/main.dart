@@ -12,14 +12,14 @@ import 'package:flutter/widgets.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/parallax.dart';
 
-import 'ovderlays/hud.dart';
+import 'overlays/hud.dart';
 
 void main() {
   runApp(
     GameWidget(
-      game: SpaceShooter(),
+      game: AlienAttack(),
       overlayBuilderMap: {
-        'StartMenu': (BuildContext context, SpaceShooter game) {
+        'StartMenu': (BuildContext context, AlienAttack game) {
           return Center(
             child: Container(
               width: 320,
@@ -52,7 +52,7 @@ void main() {
                   const Text(
                     "Controls:\n\n"
                         "W = up\nA = left\nS = down\nD = right\nSpace = shoot\n\n"
-                        "Mission: Survive and beat the boss at the end!",
+                        "Mission: Survive the enemy waves and defeat the final boss!",
                     style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.4),
                     textAlign: TextAlign.center,
                   ),
@@ -81,7 +81,7 @@ void main() {
           );
         },
 
-        'GameOver': (BuildContext context, SpaceShooter game) {
+        'GameOver': (BuildContext context, AlienAttack game) {
           return Center(
             child: Container(
               width: 320,
@@ -163,7 +163,7 @@ void main() {
   );
 }
 
-class SpaceShooter extends FlameGame with KeyboardEvents, HasCollisionDetection {
+class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
   late Player player;
   late SpawnComponent enemySpawner;
 
@@ -173,7 +173,7 @@ class SpaceShooter extends FlameGame with KeyboardEvents, HasCollisionDetection 
 
   @override
   Future<void> onLoad() async {
-    await images.loadAll([
+    await images.loadAll([ // Preload and cache images
       'player.png',
       'bullet.png',
       'enemy.png',
@@ -230,7 +230,10 @@ class SpaceShooter extends FlameGame with KeyboardEvents, HasCollisionDetection 
     starsCollected = 0;
     lifes = 3;
 
-    removeWhere((component) => component is! ParallaxComponent);
+    clear();
+
+    camera.viewfinder.anchor = Anchor.topLeft;
+    camera.viewport.add(Hud());
 
     player.position = Vector2(size.x / 2, size.y - 100);
     if (!player.isMounted) add(player);
@@ -249,14 +252,26 @@ class SpaceShooter extends FlameGame with KeyboardEvents, HasCollisionDetection 
     starsCollected = 0;
     lifes = 3;
 
-    removeWhere((component) => component is! ParallaxComponent);
+    clear();
 
     overlays.add("StartMenu");
   }
 
+  void clear() {
+    final toRemove = children.where((component) =>
+      component is Enemy ||
+      component is Bullet ||
+      component is SpawnComponent ||
+      component is Missile1
+    ).toList();
+
+    for (final c in toRemove) {
+      c.removeFromParent();
+    }
+  }
 }
 
-class Player extends SpriteAnimationComponent with HasGameReference<SpaceShooter>, CollisionCallbacks {
+class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
   Player() :
         super(size: Vector2(50, 80), anchor: Anchor.center);
 
@@ -352,7 +367,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<SpaceShooter
   }
 }
 
-class PlayerExplosion extends SpriteAnimationComponent with HasGameReference<SpaceShooter> {
+class PlayerExplosion extends SpriteAnimationComponent with HasGameReference<AlienAttack> {
   PlayerExplosion({super.position})
       : super(size: Vector2.all(120), anchor: Anchor.center);
 
@@ -386,7 +401,7 @@ class PlayerExplosion extends SpriteAnimationComponent with HasGameReference<Spa
   }
 }
 
-class Bullet extends SpriteAnimationComponent with HasGameReference<SpaceShooter>, CollisionCallbacks {
+class Bullet extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
   Bullet() : super(size: Vector2(10, 25), anchor: Anchor.center);
 
   final speed = 400;
@@ -424,37 +439,7 @@ class Bullet extends SpriteAnimationComponent with HasGameReference<SpaceShooter
   }
 }
 
-// class Bullet extends CircleComponent with HasGameReference<MyGame>, CollisionCallbacks {
-//   Bullet()
-//       : super(
-//     radius: 5,
-//     paint: Paint()..color = const Color(0xFFFFA600),
-//     anchor: Anchor.center,
-//   );
-//
-//   @override
-//   Future<void> onLoad() async {
-//     super.onLoad();
-//     add(
-//       RectangleHitbox(
-//         collisionType: CollisionType.passive,
-//       ),
-//     );
-//   }
-//
-//   @override
-//   void update(double dt) {
-//     super.update(dt);
-//
-//     position.y += dt * -500;
-//
-//     if (position.y < -game.size.y/2) {
-//       removeFromParent();
-//     }
-//   }
-// }
-
-class Enemy extends SpriteAnimationComponent with HasGameReference<SpaceShooter>, CollisionCallbacks {
+class Enemy extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
   Enemy() :
     super(size: Vector2.all(50));
 
@@ -509,7 +494,7 @@ class Enemy extends SpriteAnimationComponent with HasGameReference<SpaceShooter>
   }
 }
 
-class EnemyExplosion extends SpriteAnimationComponent with HasGameReference<SpaceShooter> {
+class EnemyExplosion extends SpriteAnimationComponent with HasGameReference<AlienAttack> {
   EnemyExplosion({super.position})
       : super(size: Vector2.all(60), anchor: Anchor.center);
 
@@ -537,7 +522,7 @@ class EnemyExplosion extends SpriteAnimationComponent with HasGameReference<Spac
   }
 }
 
-class Missile1 extends SpriteAnimationComponent with HasGameReference<SpaceShooter>, CollisionCallbacks {
+class Missile1 extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
   Missile1() : super(size: Vector2(25, 50), anchor: Anchor.center);
 
   final speed = 400;

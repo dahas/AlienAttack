@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import 'player_lifes.dart';
 
-class Hud extends PositionComponent with HasGameReference<SpaceShooter> {
+class Hud extends PositionComponent with HasGameReference<AlienAttack> {
   Hud({
     super.position,
     super.size,

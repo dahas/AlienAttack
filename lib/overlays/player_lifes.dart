@@ -7,7 +7,7 @@ enum LifesState {
 }
 
 class PlayerLifesComponent extends SpriteGroupComponent<LifesState>
-    with HasGameReference<SpaceShooter> {
+    with HasGameReference<AlienAttack> {
   final int lifesNumber;
 
   PlayerLifesComponent({
