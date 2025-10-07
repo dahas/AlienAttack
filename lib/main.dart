@@ -236,6 +236,8 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
     starsCollected = 0;
     lifes = 3;
 
+    // levelManager.startLevel(1);
+
     clear();
 
     camera.viewfinder.anchor = Anchor.topLeft;
@@ -413,7 +415,7 @@ class PlayerExplosion extends SpriteAnimationComponent with HasGameReference<Ali
 }
 
 class Bullet extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
-  Bullet() : super(size: Vector2(10, 25), anchor: Anchor.center);
+  Bullet() : super(size: Vector2(35, 40), anchor: Anchor.center);
 
   final speed = 400;
 
@@ -427,7 +429,7 @@ class Bullet extends SpriteAnimationComponent with HasGameReference<AlienAttack>
         amount: 5,
         loop: true,
         stepTime: .1,
-        textureSize: Vector2(35, 90),
+        textureSize: Vector2(141, 177),
       ),
     );
 
