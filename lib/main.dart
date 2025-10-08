@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:async';
 import 'package:flame/collisions.dart';
 import 'package:flame/effects.dart';
+import 'package:flame/events.dart';
 import 'package:flame/experimental.dart';
 import 'package:flame/input.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,9 @@ import 'package:flame/extensions.dart';
 import 'package:flame/parallax.dart';
 import 'overlays/hud.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   runApp(
     GameWidget(
       game: AlienAttack(),
@@ -391,8 +394,10 @@ void main() {
   );
 }
 
-class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
+class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisionDetection {
   late Player player;
+  Vector2? fingerPosition;
+
   late SpawnComponent enemyAlphaSpawner;
   late SpawnComponent enemyBetaSpawner;
   late SpawnComponent astroidSpawner;
@@ -445,10 +450,34 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
   }
 
   @override
+  void onPanStart(DragStartInfo info) {
+    player.position = info.eventPosition.global;
+    player.shooting = true;
+  }
+
+  @override
+  void onPanUpdate(DragUpdateInfo info) {
+    Vector2 pos = info.eventPosition.global;
+    player.position = Vector2(pos.x, pos.y - 50);
+  }
+
+  @override
+  void onPanEnd(DragEndInfo info) {
+    player.shooting = false;
+  }
+
+  @override
+  void onPanCancel() {
+    player.shooting = false;
+  }
+
+  @override
   void update(double dt) {
     super.update(dt);
-    player.move(dt);
-    player.shoot(dt);
+    if (lifes > 0) {
+      player.move(dt);
+      player.shoot(dt);
+    }
 
     if(started) time += dt;
 
@@ -705,7 +734,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
         ..position = Vector2(playerPos.x, playerPos.y - 50);
       game.add(bullet);
 
-      fireCooldown = 0.1;
+      fireCooldown = .5;
     }
   }
 
@@ -734,7 +763,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
     super.onCollisionStart(intersectionPoints, other);
     if(other is Asteroid) {
       position = Vector2(previousPosition.x, previousPosition.y + 20);
-    } else {
+    } else if(other is! PlayerBullet) {
       removeFromParent();
       game.add(Explosion(position: position, size: Vector2.all(120)));
       game.lifes--;
@@ -747,7 +776,6 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
     Future.delayed(const Duration(seconds: 1), () {
       if(game.lifes > 0) {
         final player = game.player;
-        player.position = Vector2(game.size.x/2, game.size.y/2);
         player.startInvincibility();
         game.add(player);
       } else {
