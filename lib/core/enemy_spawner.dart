@@ -1,13 +1,10 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:flame/components.dart';
-import 'package:flame/experimental.dart';
 import '../main.dart';
 
 class EnemySpawner extends Component with HasGameReference<AlienAttack> {
   final int level;
   int remainingEnemies = 0;
-  final Random _rand = Random();
 
   EnemySpawner({required this.level});
 

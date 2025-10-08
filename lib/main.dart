@@ -126,7 +126,6 @@ void main() {
                             ),
                           ),
                           onPressed: () {
-                            game.overlays.remove('GameOver');
                             game.start();
                           },
                           child: const Text(
@@ -145,7 +144,6 @@ void main() {
                             ),
                           ),
                           onPressed: () {
-                            game.overlays.remove('GameOver');
                             game.quit();
                           },
                           child: const Text(
@@ -355,7 +353,6 @@ void main() {
                               ),
                             ),
                             onPressed: () {
-                              game.overlays.remove('Victory');
                               game.start();
                             },
                             child: const Text(
@@ -374,7 +371,6 @@ void main() {
                               ),
                             ),
                             onPressed: () {
-                              game.overlays.remove('Victory');
                               game.quit();
                             },
                             child: const Text(
@@ -399,6 +395,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
   late Player player;
   late SpawnComponent enemyAlphaSpawner;
   late SpawnComponent enemyBetaSpawner;
+  late SpawnComponent astroidSpawner;
 
   int starsCollected = 0;
   int lifes = 3;
@@ -459,7 +456,9 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
       wavePauseTimer -= dt;
       if (wavePauseTimer <= 0) {
         inWavePause = false;
-        startWave();
+        if (lifes > 0) {
+          startWave();
+        }
       }
     }
   }
@@ -513,12 +512,26 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
           factory: (index) {
             return EnemyAlpha(onEnemyRemoved: onSpawnFinished, speed: 250);
           },
-          period: .8,
+          period: .7,
           area: Rectangle.fromLTWH(40, 0, size.x - 80, 0),
           random: Random(),
           spawnCount: spawnCount,
         );
         add(enemyAlphaSpawner);
+        astroidSpawner = SpawnComponent(
+          factory: (i) {
+            final randomX = Random().nextDouble() * size.x;
+            final dir = Vector2(0, 1); // nach unten
+            final speed = 30 + Random().nextDouble() * 60;
+            return Asteroid(speed: speed, direction: dir)
+              ..position = Vector2(randomX, -50);
+          },
+          period: 5,
+          area: Rectangle.fromLTWH(0, 0, size.x, 0),
+          random: Random(),
+          spawnCount: 7,
+        );
+        add(astroidSpawner);
       });
     }
 
@@ -531,17 +544,33 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
           factory: (index) {
             return EnemyAlpha(onEnemyRemoved: onSpawnFinished, speed: 300);
           },
-          period: .6,
+          period: .4,
           area: Rectangle.fromLTWH(40, 0, size.x - 80, 0),
           random: Random(),
           spawnCount: spawnCount,
         );
         add(enemyAlphaSpawner);
+        astroidSpawner = SpawnComponent(
+          factory: (i) {
+            final randomX = Random().nextDouble() * size.x;
+            final dir = Vector2(0, 1); // nach unten
+            final speed = 30 + Random().nextDouble() * 60;
+            return Asteroid(speed: speed, direction: dir)
+              ..position = Vector2(randomX, -50);
+          },
+          period: 4,
+          area: Rectangle.fromLTWH(0, 0, size.x, 0),
+          random: Random(),
+          spawnCount: 10,
+        );
+        add(astroidSpawner);
       });
     }
 
     if (currentWave == 4) {
-      overlays.add("Victory");
+      if(lifes > 0) {
+        overlays.add("Victory");
+      }
     }
   }
 
@@ -564,12 +593,16 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
       component is PlayerBullet ||
       component is SpawnComponent ||
       component is EnemyMissile1 ||
+      component is Asteroid ||
       component is Player
     ).toList();
 
     for (final c in toRemove) {
       c.removeFromParent();
     }
+
+    overlays.remove("GameOver");
+    overlays.remove("Victory");
   }
 
   void pause() {
@@ -622,6 +655,8 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
   double speed = 300;
   double fireCooldown = 0;
 
+  Vector2 previousPosition = Vector2.zero();
+
   @override
   Future<void> onLoad() async {
     animation = await game.loadSpriteAnimation(
@@ -639,6 +674,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
   }
 
   void move(double dt) {
+    previousPosition = position.clone();
     if (moveLeft) {
       if(position.x >= 30) {
         position.x -= speed * dt;
@@ -696,47 +732,66 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
   void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
     if (isInvincible) return;
     super.onCollisionStart(intersectionPoints, other);
-    removeFromParent();
-    game.add(PlayerExplosion(position: position));
-
-    game.lifes--;
-  }
-}
-
-class PlayerExplosion extends SpriteAnimationComponent with HasGameReference<AlienAttack> {
-  PlayerExplosion({super.position})
-      : super(size: Vector2.all(120), anchor: Anchor.center);
-
-  @override
-  Future<void> onLoad() async {
-    animation = await game.loadSpriteAnimation(
-      'explosion.png',
-      SpriteAnimationData.sequenced(
-        amount: 4,
-        loop: false,
-        stepTime: .1,
-        textureSize: Vector2(320, 320),
-      ),
-    );
-
-    animationTicker?.onComplete = respawn;
+    if(other is Asteroid) {
+      position = Vector2(previousPosition.x, previousPosition.y + 20);
+    } else {
+      removeFromParent();
+      game.add(Explosion(position: position, size: Vector2.all(120)));
+      game.lifes--;
+      respawn();
+    }
   }
 
   void respawn() {
     removeFromParent();
-    if(game.lifes > 0) {
-      final player = game.player;
-      player.position = Vector2(game.size.x/2, game.size.y/2);
-      player.startInvincibility();
-      game.add(player);
-    } else {
-      Future.delayed(const Duration(seconds: 1), () {
+    Future.delayed(const Duration(seconds: 1), () {
+      if(game.lifes > 0) {
+        final player = game.player;
+        player.position = Vector2(game.size.x/2, game.size.y/2);
+        player.startInvincibility();
+        game.add(player);
+      } else {
         game.started = false;
         game.overlays.add("GameOver");
-      });
-    }
+      }
+    });
   }
 }
+
+// class PlayerExplosion extends SpriteAnimationComponent with HasGameReference<AlienAttack> {
+//   PlayerExplosion({super.position})
+//       : super(size: Vector2.all(120), anchor: Anchor.center);
+//
+//   @override
+//   Future<void> onLoad() async {
+//     animation = await game.loadSpriteAnimation(
+//       'explosion.png',
+//       SpriteAnimationData.sequenced(
+//         amount: 4,
+//         loop: false,
+//         stepTime: .1,
+//         textureSize: Vector2(320, 320),
+//       ),
+//     );
+//
+//     animationTicker?.onComplete = respawn;
+//   }
+//
+//   void respawn() {
+//     removeFromParent();
+//     if(game.lifes > 0) {
+//       final player = game.player;
+//       player.position = Vector2(game.size.x/2, game.size.y/2);
+//       player.startInvincibility();
+//       game.add(player);
+//     } else {
+//       Future.delayed(const Duration(seconds: 1), () {
+//         game.started = false;
+//         game.overlays.add("GameOver");
+//       });
+//     }
+//   }
+// }
 
 class PlayerBullet extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
   PlayerBullet() : super(size: Vector2(20, 35), anchor: Anchor.center);
@@ -828,15 +883,15 @@ class EnemyAlpha extends SpriteAnimationComponent with HasGameReference<AlienAtt
     if (other is PlayerBullet) {
       removeFromParent();
       other.removeFromParent();
-      game.add(EnemyExplosion(position: position));
+      game.add(Explosion(position: position, size: Vector2.all(60)));
       onEnemyRemoved();
     }
   }
 }
 
-class EnemyExplosion extends SpriteAnimationComponent with HasGameReference<AlienAttack> {
-  EnemyExplosion({super.position})
-      : super(size: Vector2.all(60), anchor: Anchor.center);
+class Explosion extends SpriteAnimationComponent with HasGameReference<AlienAttack> {
+  Explosion({super.position, super.size})
+      : super(anchor: Anchor.center);
 
   @override
   Future<void> onLoad() async {
@@ -896,6 +951,56 @@ class EnemyMissile1 extends SpriteAnimationComponent with HasGameReference<Alien
 
     if (position.y > game.size.y) {
       removeFromParent();
+    }
+  }
+}
+
+class Asteroid extends SpriteComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
+  final double speed;
+  final Vector2 direction;
+
+  Asteroid({
+    required this.speed,
+    required this.direction,
+  }) : super(size: Vector2.all(64), anchor: Anchor.center);
+
+  @override
+  Future<void> onLoad() async {
+
+    final spriteNames = [
+      'asteroid1.png',
+      'asteroid2.png',
+      'asteroid3.png',
+      'asteroid4.png',
+      'asteroid5.png',
+    ];
+
+    final randomSprite = spriteNames[Random().nextInt(spriteNames.length)];
+    sprite = await game.loadSprite(randomSprite);
+
+    add(CircleHitbox(
+        collisionType: CollisionType.active)
+    );
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    position += direction.normalized() * speed * dt;
+    angle += 0.5 * dt;
+
+    if (position.y > game.size.y + 50) {
+      removeFromParent();
+    }
+  }
+
+  @override
+  void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollisionStart(intersectionPoints, other);
+
+    if(other is PlayerBullet) {
+      other.removeFromParent();
+      game.add(Explosion(position: position, size: Vector2.all(20)));
     }
   }
 }
