@@ -702,7 +702,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
     final playerPos = position.clone();
     if (shooting && fireCooldown <= 0) {
       final bullet = PlayerBullet()
-        ..position = Vector2(playerPos.x, playerPos.y - 50); // Starte am Player
+        ..position = Vector2(playerPos.x, playerPos.y - 50);
       game.add(bullet);
 
       fireCooldown = 0.1;
@@ -757,41 +757,6 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
     });
   }
 }
-
-// class PlayerExplosion extends SpriteAnimationComponent with HasGameReference<AlienAttack> {
-//   PlayerExplosion({super.position})
-//       : super(size: Vector2.all(120), anchor: Anchor.center);
-//
-//   @override
-//   Future<void> onLoad() async {
-//     animation = await game.loadSpriteAnimation(
-//       'explosion.png',
-//       SpriteAnimationData.sequenced(
-//         amount: 4,
-//         loop: false,
-//         stepTime: .1,
-//         textureSize: Vector2(320, 320),
-//       ),
-//     );
-//
-//     animationTicker?.onComplete = respawn;
-//   }
-//
-//   void respawn() {
-//     removeFromParent();
-//     if(game.lifes > 0) {
-//       final player = game.player;
-//       player.position = Vector2(game.size.x/2, game.size.y/2);
-//       player.startInvincibility();
-//       game.add(player);
-//     } else {
-//       Future.delayed(const Duration(seconds: 1), () {
-//         game.started = false;
-//         game.overlays.add("GameOver");
-//       });
-//     }
-//   }
-// }
 
 class PlayerBullet extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
   PlayerBullet() : super(size: Vector2(20, 35), anchor: Anchor.center);
@@ -889,34 +854,6 @@ class EnemyAlpha extends SpriteAnimationComponent with HasGameReference<AlienAtt
   }
 }
 
-class Explosion extends SpriteAnimationComponent with HasGameReference<AlienAttack> {
-  Explosion({super.position, super.size})
-      : super(anchor: Anchor.center);
-
-  @override
-  Future<void> onLoad() async {
-
-    animation = await game.loadSpriteAnimation(
-      'explosion.png',
-      SpriteAnimationData.sequenced(
-        amount: 4,
-        loop: false,
-        stepTime: .1,
-        textureSize: Vector2(320, 320),
-      ),
-    );
-
-    animationTicker?.onComplete = removeFromParent;
-  }
-
-  @override
-  void update(double dt) {
-    super.update(dt);
-
-    position.y += dt * 40;
-  }
-}
-
 class EnemyMissile1 extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
   EnemyMissile1() : super(size: Vector2(25, 50), anchor: Anchor.center);
 
@@ -1002,5 +939,33 @@ class Asteroid extends SpriteComponent with HasGameReference<AlienAttack>, Colli
       other.removeFromParent();
       game.add(Explosion(position: position, size: Vector2.all(20)));
     }
+  }
+}
+
+class Explosion extends SpriteAnimationComponent with HasGameReference<AlienAttack> {
+  Explosion({super.position, super.size})
+      : super(anchor: Anchor.center);
+
+  @override
+  Future<void> onLoad() async {
+
+    animation = await game.loadSpriteAnimation(
+      'explosion.png',
+      SpriteAnimationData.sequenced(
+        amount: 4,
+        loop: false,
+        stepTime: .1,
+        textureSize: Vector2(320, 320),
+      ),
+    );
+
+    animationTicker?.onComplete = removeFromParent;
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+
+    position.y += dt * 40;
   }
 }
