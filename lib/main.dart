@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:async';
 import 'package:flame/collisions.dart';
 import 'package:flame/effects.dart';
+import 'package:flame/experimental.dart';
 import 'package:flame/input.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
@@ -9,7 +10,6 @@ import 'package:flame/components.dart';
 import 'package:flutter/services.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/parallax.dart';
-import 'core/level_manager.dart';
 import 'overlays/hud.dart';
 
 void main() {
@@ -51,7 +51,7 @@ void main() {
                     const SizedBox(height: 16),
                     const Text(
                       "Controls:\n\n"
-                          "W = up\nA = left\nS = down\nD = right\nSpace = shoot\nP = pause\n\n"
+                          "W = up\nA = left\nS = down\nD = right\nSpace = shoot\nP = pause\nEsc = exit\n\n"
                           "Mission: Survive the enemy waves and defeat the final boss!",
                       style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.4),
                       textAlign: TextAlign.center,
@@ -192,7 +192,7 @@ void main() {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    "Press P to continue ...",
+                    "Press P again to continue ...",
                     style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.4),
                     textAlign: TextAlign.center
                   ),
@@ -243,19 +243,169 @@ void main() {
             ),
           );
         },
+        'StartWave1': (BuildContext context, AlienAttack game) {
+          return Visibility(
+              visible: !game.paused,
+              child: Align(
+                alignment: Alignment(0, -.4),
+                child: Text(
+                  "Prepare for the first strike!",
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.amberAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              )
+          );
+        },
+        'StartWave2': (BuildContext context, AlienAttack game) {
+          return Visibility(
+              visible: !game.paused,
+              child: Align(
+                alignment: Alignment(0, -.4),
+                child: Text(
+                  "Get ready for the second wave!",
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.amberAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              )
+          );
+        },
+        'StartWave3': (BuildContext context, AlienAttack game) {
+          return Visibility(
+              visible: !game.paused,
+              child: Align(
+                alignment: Alignment(0, -.4),
+                child: Text(
+                  "You made them angry. Watch out!",
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.amberAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              )
+          );
+        },
+        'Victory': (BuildContext context, AlienAttack game) {
+          return Visibility(
+              visible: !game.paused,
+              child: Center(
+                child: Container(
+                  width: 320,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: .6),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white24, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black54,
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        "Congratulation!",
+                        style: TextStyle(
+                          fontSize: 28,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        "🏆",
+                        style: TextStyle(
+                          fontSize: 36,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        "Well played! You taught them a lesson!",
+                        style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.4),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.lightGreenAccent.shade400.withValues(alpha: 0.8),
+                              foregroundColor: Colors.black,
+                              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () {
+                              game.overlays.remove('Victory');
+                              game.start();
+                            },
+                            child: const Text(
+                              'New game',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.teal.shade400.withValues(alpha: 0.8),
+                              foregroundColor: Colors.black,
+                              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () {
+                              game.overlays.remove('Victory');
+                              game.quit();
+                            },
+                            child: const Text(
+                              'Quit',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              )
+          );
+        },
       },
     ),
   );
 }
 
 class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
-  late LevelManager levelManager;
   late Player player;
   late SpawnComponent enemySpawner;
 
   int starsCollected = 0;
   int lifes = 3;
   bool started = false;
+  int currentWave = 0;
+  int spawnCount = 0;
+  double wavePauseTimer = 0;
+  bool inWavePause = false;
 
   double time = 0;
 
@@ -274,9 +424,6 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
       'stars_2.png',
       'missile1.png',
     ]);
-
-    levelManager = LevelManager();
-    add(levelManager);
 
     player = Player();
 
@@ -304,38 +451,106 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
     super.update(dt);
     player.move(dt);
     player.shoot(dt);
+
     if(started) time += dt;
-  }
 
-  @override
-  KeyEventResult onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-    player.moveLeft = keysPressed.contains(LogicalKeyboardKey.keyA);
-    player.moveRight = keysPressed.contains(LogicalKeyboardKey.keyD);
-    player.moveUp = keysPressed.contains(LogicalKeyboardKey.keyW);
-    player.moveDown = keysPressed.contains(LogicalKeyboardKey.keyS);
-    player.shooting = keysPressed.contains(LogicalKeyboardKey.space);
-
-    if (event is KeyDownEvent && keysPressed.contains(LogicalKeyboardKey.keyP)) {
-      pause();
+    if (inWavePause) {
+      wavePauseTimer -= dt;
+      if (wavePauseTimer <= 0) {
+        inWavePause = false;
+        startWave();
+      }
     }
-
-    return KeyEventResult.handled;
   }
 
   void start() {
     started = true;
     starsCollected = 0;
     lifes = 3;
+    currentWave = 0;
+    spawnCount = 0;
+    wavePauseTimer = 0;
+    inWavePause = false;
 
-    clear();
-
-    camera.viewfinder.anchor = Anchor.topLeft;
-    camera.viewport.add(Hud());
+    clear(); // Reset Enemies, Bullets, etc.
 
     player.position = Vector2(size.x / 2, size.y - 100);
     if (!player.isMounted) add(player);
 
-    levelManager.startLevel(1);
+    startWave();
+  }
+
+  void startWave() {
+    currentWave++;
+    spawnCount = 0;
+
+    if (currentWave == 1) {
+      overlays.add("StartWave1");
+      Future.delayed(const Duration(seconds: 2), () {
+        overlays.remove("StartWave1");
+        spawnCount = 10;
+        enemySpawner = SpawnComponent(
+          factory: (index) {
+            if(index >= spawnCount-1) onSpawnFinished();
+            return EnemyAlpha(onEnemyRemoved: onSpawnFinished, speed: 100);
+          },
+          period: 1,
+          area: Rectangle.fromLTWH(40, 0, size.x - 80, 0),
+          random: Random(),
+          spawnCount: spawnCount,
+        );
+        add(enemySpawner);
+      });
+    }
+
+    if (currentWave == 2) {
+      overlays.add("StartWave2");
+      Future.delayed(const Duration(seconds: 2), () {
+        overlays.remove("StartWave2");
+        spawnCount = 18;
+        enemySpawner = SpawnComponent(
+          factory: (index) {
+            return EnemyAlpha(onEnemyRemoved: onSpawnFinished, speed: 150);
+          },
+          period: .8,
+          area: Rectangle.fromLTWH(40, 0, size.x - 80, 0),
+          random: Random(),
+          spawnCount: spawnCount,
+        );
+        add(enemySpawner);
+      });
+    }
+
+    if (currentWave == 3) {
+      overlays.add("StartWave3");
+      Future.delayed(const Duration(seconds: 2), () {
+        overlays.remove("StartWave3");
+        spawnCount = 24;
+        enemySpawner = SpawnComponent(
+          factory: (index) {
+            return EnemyAlpha(onEnemyRemoved: onSpawnFinished, speed: 200);
+          },
+          period: .6,
+          area: Rectangle.fromLTWH(40, 0, size.x - 80, 0),
+          random: Random(),
+          spawnCount: spawnCount,
+        );
+        add(enemySpawner);
+      });
+    }
+
+    if (currentWave == 4) {
+      overlays.add("Victory");
+    }
+  }
+
+  void onSpawnFinished() {
+    spawnCount--;
+    if (spawnCount <= 0) {
+      enemySpawner.removeFromParent();
+      inWavePause = true;
+      wavePauseTimer = 3;
+    }
   }
 
   void quit() {
@@ -350,10 +565,11 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
 
   void clear() {
     final toRemove = children.where((component) =>
-      component is Enemy ||
-      component is Bullet ||
+      component is EnemyAlpha ||
+      component is PlayerBullet ||
       component is SpawnComponent ||
-      component is Missile1
+      component is EnemyMissile1 ||
+      component is Player
     ).toList();
 
     for (final c in toRemove) {
@@ -372,6 +588,26 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
 
   double elapsedTime() {
     return time;
+  }
+
+  @override
+  KeyEventResult onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    player.moveLeft = keysPressed.contains(LogicalKeyboardKey.keyA);
+    player.moveRight = keysPressed.contains(LogicalKeyboardKey.keyD);
+    player.moveUp = keysPressed.contains(LogicalKeyboardKey.keyW);
+    player.moveDown = keysPressed.contains(LogicalKeyboardKey.keyS);
+    player.shooting = keysPressed.contains(LogicalKeyboardKey.space);
+
+    if (event is KeyDownEvent) {
+      if (keysPressed.contains(LogicalKeyboardKey.keyP)) {
+        pause();
+      }
+      if (keysPressed.contains(LogicalKeyboardKey.escape)) {
+        quit();
+      }
+    }
+
+    return KeyEventResult.handled;
   }
 }
 
@@ -433,7 +669,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
     fireCooldown -= dt;
     final playerPos = position.clone();
     if (shooting && fireCooldown <= 0) {
-      final bullet = Bullet()
+      final bullet = PlayerBullet()
         ..position = Vector2(playerPos.x, playerPos.y - 50); // Starte am Player
       game.add(bullet);
 
@@ -506,8 +742,8 @@ class PlayerExplosion extends SpriteAnimationComponent with HasGameReference<Ali
   }
 }
 
-class Bullet extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
-  Bullet() : super(size: Vector2(20, 35), anchor: Anchor.center);
+class PlayerBullet extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
+  PlayerBullet() : super(size: Vector2(20, 35), anchor: Anchor.center);
 
   final speed = 400;
 
@@ -544,14 +780,15 @@ class Bullet extends SpriteAnimationComponent with HasGameReference<AlienAttack>
   }
 }
 
-class Enemy extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
-  Enemy() :
-    super(size: Vector2.all(50));
+class EnemyAlpha extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
+  final VoidCallback onEnemyRemoved;
+  final int speed;
+
+  EnemyAlpha({required this.onEnemyRemoved, this.speed = 100}) : super(size: Vector2.all(50));
 
   final random = Random();
 
   static const spriteHeight = 50.0;
-  final int speed = 100;
 
   @override
   Future<void> onLoad() async {
@@ -570,7 +807,7 @@ class Enemy extends SpriteAnimationComponent with HasGameReference<AlienAttack>,
     add(RectangleHitbox());
 
     if (random.nextDouble() < 0.3) {
-      final rocket = Missile1()
+      final rocket = EnemyMissile1()
         ..position = Vector2(position.x, position.y + 30);
       game.add(rocket);
     }
@@ -582,8 +819,9 @@ class Enemy extends SpriteAnimationComponent with HasGameReference<AlienAttack>,
 
     position.y += dt * speed;
 
-    if (position.y > game.size.y + Enemy.spriteHeight) {
+    if (position.y > game.size.y + EnemyAlpha.spriteHeight) {
       removeFromParent();
+      onEnemyRemoved();
     }
   }
 
@@ -591,10 +829,11 @@ class Enemy extends SpriteAnimationComponent with HasGameReference<AlienAttack>,
   Future<void> onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) async {
     super.onCollisionStart(intersectionPoints, other);
 
-    if (other is Bullet) {
+    if (other is PlayerBullet) {
       removeFromParent();
       other.removeFromParent();
       game.add(EnemyExplosion(position: position));
+      onEnemyRemoved();
     }
   }
 }
@@ -627,8 +866,8 @@ class EnemyExplosion extends SpriteAnimationComponent with HasGameReference<Alie
   }
 }
 
-class Missile1 extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
-  Missile1() : super(size: Vector2(25, 50), anchor: Anchor.center);
+class EnemyMissile1 extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
+  EnemyMissile1() : super(size: Vector2(25, 50), anchor: Anchor.center);
 
   final speed = 400;
 

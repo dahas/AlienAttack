@@ -18,22 +18,23 @@ class EnemySpawner extends Component with HasGameReference<AlienAttack> {
     // Anzahl Gegner pro Level z. B. 5 + Level * 3
     remainingEnemies = 5 + level * 3;
 
-    spawnWave();
+    spawnWave(5);
   }
 
-  void spawnWave() {
-    game.add(SpawnComponent(
-      factory: (index) {
-        return Enemy();
-      },
-      period: 1,
-      area: Rectangle.fromLTWH(40, 0, game.size.x - 80, 0),
-      random: _rand,
-    ));
+  void spawnWave(int amount) {
+    // game.add(SpawnComponent(
+    //   factory: (index) {
+    //     return Enemy();
+    //   },
+    //   period: 1,
+    //   area: Rectangle.fromLTWH(40, 0, game.size.x - 80, 0),
+    //   random: _rand,
+    //   spawnCount: amount,
+    // ));
   }
 
   void onEnemyDestroyed() {
     remainingEnemies--;
-    game.levelManager.onEnemyDestroyed();
+    // game.levelManager.onEnemyDestroyed();
   }
 }

@@ -34,7 +34,7 @@ class BossEnemy extends SpriteComponent with HasGameReference<AlienAttack>, Coll
     hp -= dmg;
     if (hp <= 0) {
       removeFromParent();
-      game.levelManager.onBossDefeated();
+      // game.levelManager.onBossDefeated();
     }
   }
 }
