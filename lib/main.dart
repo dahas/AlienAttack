@@ -397,7 +397,8 @@ void main() {
 
 class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
   late Player player;
-  late SpawnComponent enemySpawner;
+  late SpawnComponent enemyAlphaSpawner;
+  late SpawnComponent enemyBetaSpawner;
 
   int starsCollected = 0;
   int lifes = 3;
@@ -488,18 +489,18 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
       overlays.add("StartWave1");
       Future.delayed(const Duration(seconds: 2), () {
         overlays.remove("StartWave1");
-        spawnCount = 10;
-        enemySpawner = SpawnComponent(
+        spawnCount = 20;
+        enemyAlphaSpawner = SpawnComponent(
           factory: (index) {
             if(index >= spawnCount-1) onSpawnFinished();
-            return EnemyAlpha(onEnemyRemoved: onSpawnFinished, speed: 100);
+            return EnemyAlpha(onEnemyRemoved: onSpawnFinished, speed: 200);
           },
           period: 1,
           area: Rectangle.fromLTWH(40, 0, size.x - 80, 0),
           random: Random(),
           spawnCount: spawnCount,
         );
-        add(enemySpawner);
+        add(enemyAlphaSpawner);
       });
     }
 
@@ -507,17 +508,17 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
       overlays.add("StartWave2");
       Future.delayed(const Duration(seconds: 2), () {
         overlays.remove("StartWave2");
-        spawnCount = 18;
-        enemySpawner = SpawnComponent(
+        spawnCount = 25;
+        enemyAlphaSpawner = SpawnComponent(
           factory: (index) {
-            return EnemyAlpha(onEnemyRemoved: onSpawnFinished, speed: 150);
+            return EnemyAlpha(onEnemyRemoved: onSpawnFinished, speed: 250);
           },
           period: .8,
           area: Rectangle.fromLTWH(40, 0, size.x - 80, 0),
           random: Random(),
           spawnCount: spawnCount,
         );
-        add(enemySpawner);
+        add(enemyAlphaSpawner);
       });
     }
 
@@ -525,17 +526,17 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
       overlays.add("StartWave3");
       Future.delayed(const Duration(seconds: 2), () {
         overlays.remove("StartWave3");
-        spawnCount = 24;
-        enemySpawner = SpawnComponent(
+        spawnCount = 30;
+        enemyAlphaSpawner = SpawnComponent(
           factory: (index) {
-            return EnemyAlpha(onEnemyRemoved: onSpawnFinished, speed: 200);
+            return EnemyAlpha(onEnemyRemoved: onSpawnFinished, speed: 300);
           },
           period: .6,
           area: Rectangle.fromLTWH(40, 0, size.x - 80, 0),
           random: Random(),
           spawnCount: spawnCount,
         );
-        add(enemySpawner);
+        add(enemyAlphaSpawner);
       });
     }
 
@@ -547,20 +548,14 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
   void onSpawnFinished() {
     spawnCount--;
     if (spawnCount <= 0) {
-      enemySpawner.removeFromParent();
+      enemyAlphaSpawner.removeFromParent();
       inWavePause = true;
       wavePauseTimer = 3;
     }
   }
 
-  void quit() {
-    started = false;
-    starsCollected = 0;
-    lifes = 3;
-
-    clear();
-
-    overlays.add("StartMenu");
+  double elapsedTime() {
+    return time;
   }
 
   void clear() {
@@ -586,8 +581,9 @@ class AlienAttack extends FlameGame with KeyboardEvents, HasCollisionDetection {
     }
   }
 
-  double elapsedTime() {
-    return time;
+  void quit() {
+    clear();
+    overlays.add("StartMenu");
   }
 
   @override
