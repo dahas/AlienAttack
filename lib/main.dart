@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'dart:async';
+import 'dart:ui';
 import 'package:flame/collisions.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
@@ -525,7 +526,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
     currentWave++;
     spawnCount = 0;
 
-    if (currentWave == 1) {
+    if (currentWave == 10) {
       overlays.add("StartWave1");
       Future.delayed(const Duration(seconds: 2), () {
         overlays.remove("StartWave1");
@@ -634,7 +635,11 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
       });
     }
 
-    if (currentWave == 4) {
+    if (currentWave == 1) {
+      add(Boss());
+    }
+
+    if (currentWave >= 5) {
       if(lifes > 0) {
         overlays.add("Victory");
       }
@@ -661,7 +666,8 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
       component is SpawnComponent ||
       component is EnemyMissile1 ||
       component is Asteroid ||
-      component is PowerUp
+      component is PowerUp ||
+      component is Boss
     ).toList();
 
     for (final c in toRemove) {
@@ -1157,3 +1163,78 @@ class PowerUp extends SpriteAnimationComponent with HasGameReference<AlienAttack
     }
   }
 }
+
+class Boss extends SpriteAnimationComponent
+    with HasGameReference<AlienAttack>, CollisionCallbacks {
+  Boss() : super(size: Vector2.all(200));
+
+  double speedY = 10;
+  double horizontalSpeed = 0;      // aktuelle horizontale Geschwindigkeit
+  double targetSpeed = 0;          // Zielgeschwindigkeit
+  double driftTimer = 0;
+  double driftDuration = 2;
+  double time = 0;
+
+  final random = Random();
+
+  @override
+  Future<void> onLoad() async {
+    anchor = Anchor.center;
+
+    animation = await game.loadSpriteAnimation(
+      'boss.png',
+      SpriteAnimationData.sequenced(
+        amount: 1,
+        loop: true,
+        stepTime: 20,
+        textureSize: Vector2(600, 600),
+      ),
+    );
+
+    position = Vector2(game.size.x / 2, 100);
+    add(CircleHitbox());
+
+    // initial zufällige Zielgeschwindigkeit
+    targetSpeed = (random.nextBool() ? 1 : -1) * (50 + random.nextDouble() * 100);
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    time += dt;
+    driftTimer += dt;
+
+    if (driftTimer >= driftDuration) {
+      driftTimer = 0;
+      driftDuration = 1 + random.nextDouble() * 3; // 1–4 s
+      targetSpeed = (random.nextBool() ? 1 : -1) * (50 + random.nextDouble() * 100);
+    }
+
+    horizontalSpeed = lerpDouble(horizontalSpeed, targetSpeed, dt * 2)!;
+
+    position.x += horizontalSpeed * dt;
+    position.y += sin(time * 0.8) * 10 * dt + speedY * dt;
+
+    if (position.x < size.x / 2) {
+      position.x = size.x / 2;
+      horizontalSpeed = horizontalSpeed.abs();
+      targetSpeed = horizontalSpeed;
+    } else if (position.x > game.size.x - size.x / 2) {
+      position.x = game.size.x - size.x / 2;
+      horizontalSpeed = -horizontalSpeed.abs();
+      targetSpeed = horizontalSpeed;
+    }
+  }
+
+  @override
+  void onCollisionStart(
+      Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollisionStart(intersectionPoints, other);
+
+    if (other is PlayerBullet) {
+      other.removeFromParent();
+      game.add(Explosion(position: intersectionPoints.first, size: Vector2.all(80)));
+    }
+  }
+}
+
