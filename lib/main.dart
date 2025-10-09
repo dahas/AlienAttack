@@ -1081,6 +1081,12 @@ class PowerUp extends SpriteAnimationComponent with HasGameReference<AlienAttack
 
   final speed = 50;
 
+  double time = 0;
+  double horizontalSpeed = 40;
+  double driftTimer = 0;
+  double driftDuration = 1;
+  double direction = 1;
+
   @override
   Future<void> onLoad() async {
     super.onLoad();
@@ -1105,12 +1111,6 @@ class PowerUp extends SpriteAnimationComponent with HasGameReference<AlienAttack
       CircleHitbox(),
     );
   }
-
-  double time = 0;
-  double horizontalSpeed = 40;
-  double driftTimer = 0;
-  double driftDuration = 1;
-  double direction = 1;
 
   @override
   void update(double dt) {
