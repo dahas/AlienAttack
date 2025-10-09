@@ -400,6 +400,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
 
   late SpawnComponent enemyAlphaSpawner;
   late SpawnComponent enemyBetaSpawner;
+  late SpawnComponent powerupSpawner;
   late SpawnComponent astroidSpawner;
 
   int starsCollected = 0;
@@ -426,6 +427,11 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
       'stars_1.png',
       'stars_2.png',
       'missile1.png',
+      'asteroid1.png',
+      'asteroid2.png',
+      'asteroid3.png',
+      'asteroid4.png',
+      'asteroid5.png',
     ]);
 
     player = Player();
@@ -451,6 +457,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
 
   @override
   void onPanStart(DragStartInfo info) {
+    if (player.isInvincible) return;
     player.position = info.eventPosition.global;
     player.shooting = true;
   }
@@ -529,6 +536,14 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
           spawnCount: spawnCount,
         );
         add(enemyAlphaSpawner);
+        powerupSpawner = SpawnComponent(
+          factory: (index) => PowerUp1(type: 1),
+          period: 3,
+          area: Rectangle.fromLTWH(100, 0, size.x - 100, 0),
+          random: Random(),
+          spawnCount: 1,
+        );
+        add(powerupSpawner);
       });
     }
 
@@ -549,8 +564,9 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
         add(enemyAlphaSpawner);
         astroidSpawner = SpawnComponent(
           factory: (i) {
-            final randomX = Random().nextDouble() * size.x;
-            final dir = Vector2(0, 1); // nach unten
+            final random = Random().nextDouble();
+            final randomX = random * size.x;
+            final dir = Vector2(random*2-1, 1); // nach unten
             final speed = 30 + Random().nextDouble() * 60;
             return Asteroid(speed: speed, direction: dir)
               ..position = Vector2(randomX, -50);
@@ -561,6 +577,14 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
           spawnCount: 7,
         );
         add(astroidSpawner);
+        powerupSpawner = SpawnComponent(
+          factory: (index) => PowerUp1(type: 2),
+          period: 3,
+          area: Rectangle.fromLTWH(100, 0, size.x - 100, 0),
+          random: Random(),
+          spawnCount: 1,
+        );
+        add(powerupSpawner);
       });
     }
 
@@ -581,9 +605,10 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
         add(enemyAlphaSpawner);
         astroidSpawner = SpawnComponent(
           factory: (i) {
-            final randomX = Random().nextDouble() * size.x;
-            final dir = Vector2(0, 1); // nach unten
-            final speed = 30 + Random().nextDouble() * 60;
+            final random = Random().nextDouble();
+            final randomX = random * size.x;
+            final dir = Vector2(random*2-1, 1); // nach unten
+            final speed = 40 + Random().nextDouble() * 60;
             return Asteroid(speed: speed, direction: dir)
               ..position = Vector2(randomX, -50);
           },
@@ -593,6 +618,14 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
           spawnCount: 10,
         );
         add(astroidSpawner);
+        powerupSpawner = SpawnComponent(
+          factory: (index) => PowerUp1(type: 3),
+          period: 3,
+          area: Rectangle.fromLTWH(100, 0, size.x - 100, 0),
+          random: Random(),
+          spawnCount: 1,
+        );
+        add(powerupSpawner);
       });
     }
 
@@ -686,6 +719,8 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
 
   Vector2 previousPosition = Vector2.zero();
 
+  int shootingPower = 1;
+
   @override
   Future<void> onLoad() async {
     animation = await game.loadSpriteAnimation(
@@ -729,12 +764,42 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
   void shoot(double dt) {
     fireCooldown -= dt;
     final playerPos = position.clone();
-    if (shooting && fireCooldown <= 0) {
-      final bullet = PlayerBullet()
-        ..position = Vector2(playerPos.x, playerPos.y - 50);
-      game.add(bullet);
-
-      fireCooldown = .5;
+    if (shooting && fireCooldown <= 0 && !isInvincible) {
+      switch(shootingPower) {
+        case 1:
+          final bulletC = PlayerBullet(direction: Vector2(0, -1), speed: 400);
+          bulletC.position = Vector2(playerPos.x, playerPos.y - 50);
+          game.add(bulletC);
+          fireCooldown = .5;
+          break;
+        case 2:
+          final bulletC = PlayerBullet(direction: Vector2(0, -1), speed: 500);
+          bulletC.position = Vector2(playerPos.x, playerPos.y - 50);
+          game.add(bulletC);
+          fireCooldown = .2;
+          break;
+        case 3:
+          final bulletL = PlayerBullet(direction: Vector2(0, -1), speed: 500);
+          final bulletR = PlayerBullet(direction: Vector2(0, -1), speed: 500);
+          bulletL.position = Vector2(playerPos.x-10, playerPos.y - 30);
+          bulletR.position = Vector2(playerPos.x+10, playerPos.y - 30);
+          game.add(bulletL);
+          game.add(bulletR);
+          fireCooldown = .2;
+          break;
+        default:
+          final bulletL = PlayerBullet(direction: Vector2(-.05, -1), speed: 600);
+          final bulletC = PlayerBullet(direction: Vector2(0, -1), speed: 600);
+          final bulletR = PlayerBullet(direction: Vector2(.05, -1), speed: 600);
+          bulletL.position = Vector2(playerPos.x-10, playerPos.y - 20);
+          bulletC.position = Vector2(playerPos.x, playerPos.y - 50);
+          bulletR.position = Vector2(playerPos.x+10, playerPos.y - 20);
+          game.add(bulletL);
+          game.add(bulletC);
+          game.add(bulletR);
+          fireCooldown = .1;
+          break;
+      }
     }
   }
 
@@ -763,6 +828,8 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
     super.onCollisionStart(intersectionPoints, other);
     if(other is Asteroid) {
       position = Vector2(previousPosition.x, previousPosition.y + 20);
+    } else if(other is PowerUp1) {
+      shootingPower++;
     } else if(other is! PlayerBullet) {
       removeFromParent();
       game.add(Explosion(position: position, size: Vector2.all(120)));
@@ -773,10 +840,10 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
 
   void respawn() {
     removeFromParent();
+    final player = game.player;
+    player.startInvincibility();
     Future.delayed(const Duration(seconds: 1), () {
       if(game.lifes > 0) {
-        final player = game.player;
-        player.startInvincibility();
         game.add(player);
       } else {
         game.started = false;
@@ -787,9 +854,10 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
 }
 
 class PlayerBullet extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
-  PlayerBullet() : super(size: Vector2(20, 35), anchor: Anchor.center);
+  Vector2 direction;
+  double speed;
 
-  final speed = 400;
+  PlayerBullet({required this.direction, this.speed = 500}) : super(size: Vector2(12, 24), anchor: Anchor.center);
 
   @override
   Future<void> onLoad() async {
@@ -815,8 +883,7 @@ class PlayerBullet extends SpriteAnimationComponent with HasGameReference<AlienA
   @override
   void update(double dt) {
     super.update(dt);
-
-    position.y += dt * -500;
+    position += direction.normalized() * speed * dt;
 
     if (position.y < 0) {
       removeFromParent();
@@ -954,7 +1021,7 @@ class Asteroid extends SpriteComponent with HasGameReference<AlienAttack>, Colli
     position += direction.normalized() * speed * dt;
     angle += 0.5 * dt;
 
-    if (position.y > game.size.y + 50) {
+    if (position.y > game.size.y + 64 || position.x < -64 || position.x > game.size.x + 64) {
       removeFromParent();
     }
   }
@@ -995,5 +1062,57 @@ class Explosion extends SpriteAnimationComponent with HasGameReference<AlienAtta
     super.update(dt);
 
     position.y += dt * 40;
+  }
+}
+
+class PowerUp1 extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
+  int? type;
+
+  PowerUp1({this.type}) : super(size: Vector2(50, 50), anchor: Anchor.center);
+
+  final speed = 50;
+
+  @override
+  Future<void> onLoad() async {
+    super.onLoad();
+    String image;
+    switch(type) {
+      case 1: image = 'powerup1.png'; break;
+      case 2: image = 'powerup2.png'; break;
+      default: image = 'powerup3.png'; break;
+    }
+
+    animation = await game.loadSpriteAnimation(
+      image,
+      SpriteAnimationData.sequenced(
+        amount: 5,
+        loop: true,
+        stepTime: .1,
+        textureSize: Vector2(120, 120),
+      ),
+    );
+
+    add(
+      CircleHitbox(),
+    );
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+
+    position.y -= dt * -speed;
+
+    if (position.y > game.size.y) {
+      removeFromParent();
+    }
+  }
+
+  @override
+  void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollisionStart(intersectionPoints, other);
+    if (other is Player) {
+      removeFromParent();
+    }
   }
 }
