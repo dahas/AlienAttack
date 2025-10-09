@@ -435,6 +435,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
       'powerup1.png',
       'powerup2.png',
       'powerup3.png',
+      'boss.png',
     ]);
 
     player = Player();
