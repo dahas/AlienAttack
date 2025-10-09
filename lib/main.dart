@@ -432,6 +432,9 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
       'asteroid3.png',
       'asteroid4.png',
       'asteroid5.png',
+      'powerup1.png',
+      'powerup2.png',
+      'powerup3.png',
     ]);
 
     player = Player();
@@ -457,7 +460,6 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
 
   @override
   void onPanStart(DragStartInfo info) {
-    if (player.isInvincible) return;
     player.position = info.eventPosition.global;
     player.shooting = true;
   }
@@ -465,7 +467,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
   @override
   void onPanUpdate(DragUpdateInfo info) {
     Vector2 pos = info.eventPosition.global;
-    player.position = Vector2(pos.x, pos.y - 50);
+    player.position = Vector2(pos.x, pos.y);
   }
 
   @override
@@ -511,6 +513,8 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
     clear(); // Reset Enemies, Bullets, etc.
 
     player.position = Vector2(size.x / 2, size.y - 100);
+    player.shootingPower = 1;
+    player.isInvisible = false;
     if (!player.isMounted) add(player);
 
     startWave();
@@ -537,9 +541,9 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
         );
         add(enemyAlphaSpawner);
         powerupSpawner = SpawnComponent(
-          factory: (index) => PowerUp1(type: 1),
+          factory: (index) => PowerUp(type: 1),
           period: 3,
-          area: Rectangle.fromLTWH(100, 0, size.x - 100, 0),
+          area: Rectangle.fromLTWH(200, 0, size.x - 200, 0),
           random: Random(),
           spawnCount: 1,
         );
@@ -578,7 +582,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
         );
         add(astroidSpawner);
         powerupSpawner = SpawnComponent(
-          factory: (index) => PowerUp1(type: 2),
+          factory: (index) => PowerUp(type: 2),
           period: 3,
           area: Rectangle.fromLTWH(100, 0, size.x - 100, 0),
           random: Random(),
@@ -619,7 +623,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
         );
         add(astroidSpawner);
         powerupSpawner = SpawnComponent(
-          factory: (index) => PowerUp1(type: 3),
+          factory: (index) => PowerUp(type: 3),
           period: 3,
           area: Rectangle.fromLTWH(100, 0, size.x - 100, 0),
           random: Random(),
@@ -656,7 +660,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
       component is SpawnComponent ||
       component is EnemyMissile1 ||
       component is Asteroid ||
-      component is Player
+      component is PowerUp
     ).toList();
 
     for (final c in toRemove) {
@@ -712,7 +716,8 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
   bool moveDown = false;
 
   bool shooting = false;
-  bool isInvincible = false;
+  bool isInvisible = false;
+  bool isProtected = false;
 
   double speed = 300;
   double fireCooldown = 0;
@@ -728,13 +733,19 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
       SpriteAnimationData.sequenced(
         amount: 3,
         stepTime: .1,
-        textureSize: Vector2(803, 1280),
+        textureSize: Vector2(110, 175),
       ),
     );
 
     position = Vector2(game.size.x / 2, game.size.y - 100);
 
     add(CircleHitbox());
+  }
+
+  @override
+  void render(Canvas canvas) {
+    if (isInvisible) return;
+    super.render(canvas);
   }
 
   void move(double dt) {
@@ -764,7 +775,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
   void shoot(double dt) {
     fireCooldown -= dt;
     final playerPos = position.clone();
-    if (shooting && fireCooldown <= 0 && !isInvincible) {
+    if (shooting && fireCooldown <= 0 && !isInvisible) {
       switch(shootingPower) {
         case 1:
           final bulletC = PlayerBullet(direction: Vector2(0, -1), speed: 400);
@@ -804,7 +815,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
   }
 
   void startInvincibility() {
-    isInvincible = true;
+    isProtected = true;
     final blinkEffect = SequenceEffect(
       [
         OpacityEffect.to(0.2, EffectController(duration: 0.15)),
@@ -816,7 +827,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
     add(blinkEffect);
 
     Future.delayed(const Duration(seconds: 2), () {
-      isInvincible = false;
+      isProtected = false;
       blinkEffect.removeFromParent();
       opacity = 1.0;
     });
@@ -824,14 +835,13 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
 
   @override
   void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
-    if (isInvincible) return;
+    if (isProtected || isInvisible) return;
     super.onCollisionStart(intersectionPoints, other);
     if(other is Asteroid) {
       position = Vector2(previousPosition.x, previousPosition.y + 20);
-    } else if(other is PowerUp1) {
+    } else if(other is PowerUp) {
       shootingPower++;
     } else if(other is! PlayerBullet) {
-      removeFromParent();
       game.add(Explosion(position: position, size: Vector2.all(120)));
       game.lifes--;
       respawn();
@@ -839,12 +849,11 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
   }
 
   void respawn() {
-    removeFromParent();
-    final player = game.player;
-    player.startInvincibility();
-    Future.delayed(const Duration(seconds: 1), () {
+    isInvisible = true;
+    Future.delayed(const Duration(seconds: 2), () {
       if(game.lifes > 0) {
-        game.add(player);
+        isInvisible = false;
+        startInvincibility();
       } else {
         game.started = false;
         game.overlays.add("GameOver");
@@ -1065,10 +1074,10 @@ class Explosion extends SpriteAnimationComponent with HasGameReference<AlienAtta
   }
 }
 
-class PowerUp1 extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
+class PowerUp extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
   int? type;
 
-  PowerUp1({this.type}) : super(size: Vector2(50, 50), anchor: Anchor.center);
+  PowerUp({this.type}) : super(size: Vector2(50, 50), anchor: Anchor.center);
 
   final speed = 50;
 
@@ -1097,11 +1106,27 @@ class PowerUp1 extends SpriteAnimationComponent with HasGameReference<AlienAttac
     );
   }
 
+  double time = 0;
+  double horizontalSpeed = 40;
+  double driftTimer = 0;
+  double driftDuration = 1;
+  double direction = 1;
+
   @override
   void update(double dt) {
     super.update(dt);
+    time += dt;
 
-    position.y -= dt * -speed;
+    driftTimer += dt;
+    if (driftTimer > driftDuration) {
+      driftTimer = 0;
+      driftDuration = 0.5 + Random().nextDouble() * 1.5; // 0.5–2 s
+      direction = Random().nextBool() ? 1 : -1; // wechselt Richtung
+    }
+
+    position.x += sin(time * 2) * 40 * dt + (direction * horizontalSpeed * dt);
+    position.y += speed * dt;
+
 
     if (position.y > game.size.y) {
       removeFromParent();
