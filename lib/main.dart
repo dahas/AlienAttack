@@ -558,7 +558,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
         spawnCount = 25;
         enemyAlphaSpawner = SpawnComponent(
           factory: (index) {
-            return EnemyAlpha(onEnemyRemoved: onSpawnFinished, speed: 250);
+            return EnemyAlpha(onEnemyRemoved: onSpawnFinished, speed: 250, straight: false);
           },
           period: .7,
           area: Rectangle.fromLTWH(40, 0, size.x - 80, 0),
@@ -599,7 +599,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
         spawnCount = 30;
         enemyAlphaSpawner = SpawnComponent(
           factory: (index) {
-            return EnemyAlpha(onEnemyRemoved: onSpawnFinished, speed: 300);
+            return EnemyAlpha(onEnemyRemoved: onSpawnFinished, speed: 300, straight: false);
           },
           period: .4,
           area: Rectangle.fromLTWH(40, 0, size.x - 80, 0),
@@ -903,16 +903,21 @@ class PlayerBullet extends SpriteAnimationComponent with HasGameReference<AlienA
 class EnemyAlpha extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
   final VoidCallback onEnemyRemoved;
   final int speed;
+  final bool straight;
 
-  EnemyAlpha({required this.onEnemyRemoved, this.speed = 100}) : super(size: Vector2.all(50));
+  EnemyAlpha({required this.onEnemyRemoved, this.speed = 100, this.straight = true}) : super(size: Vector2.all(50));
 
   final random = Random();
-
   static const spriteHeight = 50.0;
+  late double direction;
+
+  double time = 0;
 
   @override
   Future<void> onLoad() async {
     anchor = Anchor.center;
+
+    direction = Random().nextBool() ? 1 : -1;
 
     animation = await game.loadSpriteAnimation(
       'enemy.png',
@@ -937,7 +942,12 @@ class EnemyAlpha extends SpriteAnimationComponent with HasGameReference<AlienAtt
   void update(double dt) {
     super.update(dt);
 
-    position.y += dt * speed;
+    if (!straight) {
+      time += dt;
+      position.x += sin(time * 2) * 50 * dt * direction;
+    }
+
+    position.y += speed * dt;
 
     if (position.y > game.size.y + EnemyAlpha.spriteHeight) {
       removeFromParent();
@@ -1080,12 +1090,12 @@ class PowerUp extends SpriteAnimationComponent with HasGameReference<AlienAttack
   PowerUp({this.type}) : super(size: Vector2(50, 50), anchor: Anchor.center);
 
   final speed = 50;
+  late double direction;
 
   double time = 0;
   double horizontalSpeed = 40;
   double driftTimer = 0;
-  double driftDuration = 1;
-  double direction = 1;
+  double driftDuration = 2;
 
   @override
   Future<void> onLoad() async {
@@ -1096,6 +1106,8 @@ class PowerUp extends SpriteAnimationComponent with HasGameReference<AlienAttack
       case 2: image = 'powerup2.png'; break;
       default: image = 'powerup3.png'; break;
     }
+
+    direction = Random().nextBool() ? 1 : -1;
 
     animation = await game.loadSpriteAnimation(
       image,
@@ -1124,9 +1136,12 @@ class PowerUp extends SpriteAnimationComponent with HasGameReference<AlienAttack
       direction = Random().nextBool() ? 1 : -1; // wechselt Richtung
     }
 
+    if(position.x <= 0 || position.x >= game.size.x) {
+      direction = direction * -1;
+    }
+
     position.x += sin(time * 2) * 40 * dt + (direction * horizontalSpeed * dt);
     position.y += speed * dt;
-
 
     if (position.y > game.size.y) {
       removeFromParent();
