@@ -1066,7 +1066,7 @@ class Asteroid extends SpriteComponent with HasGameReference<AlienAttack>, Colli
 
     if(other is PlayerBullet) {
       other.removeFromParent();
-      game.add(Explosion(position: position, size: Vector2.all(20)));
+      game.add(Explosion(position: intersectionPoints.first, size: Vector2.all(20)));
     }
   }
 }
