@@ -526,7 +526,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
     currentWave++;
     spawnCount = 0;
 
-    if (currentWave == 10) {
+    if (currentWave == 1) {
       overlays.add("StartWave1");
       Future.delayed(const Duration(seconds: 2), () {
         overlays.remove("StartWave1");
@@ -635,8 +635,16 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
       });
     }
 
-    if (currentWave == 1) {
+    if (currentWave == 4) {
       add(Boss());
+      powerupSpawner = SpawnComponent(
+        factory: (index) => PowerUp(type: 1),
+        period: 3,
+        area: Rectangle.fromLTWH(200, 0, size.x - 200, 0),
+        random: Random(),
+        spawnCount: 1,
+      );
+      add(powerupSpawner);
     }
 
     if (currentWave >= 5) {
@@ -1096,13 +1104,16 @@ class PowerUp extends SpriteAnimationComponent with HasGameReference<AlienAttack
 
   PowerUp({this.type}) : super(size: Vector2(50, 50), anchor: Anchor.center);
 
-  final speed = 50;
-  late double direction;
+  // late double direction;
 
-  double time = 0;
-  double horizontalSpeed = 40;
+  double speedY = 50;
+  double horizontalSpeed = 0;      // aktuelle horizontale Geschwindigkeit
+  double targetSpeed = 0;          // Zielgeschwindigkeit
   double driftTimer = 0;
   double driftDuration = 2;
+  double time = 0;
+
+  final random = Random();
 
   @override
   Future<void> onLoad() async {
@@ -1114,7 +1125,7 @@ class PowerUp extends SpriteAnimationComponent with HasGameReference<AlienAttack
       default: image = 'powerup3.png'; break;
     }
 
-    direction = Random().nextBool() ? 1 : -1;
+    // direction = Random().nextBool() ? 1 : -1;
 
     animation = await game.loadSpriteAnimation(
       image,
@@ -1135,23 +1146,27 @@ class PowerUp extends SpriteAnimationComponent with HasGameReference<AlienAttack
   void update(double dt) {
     super.update(dt);
     time += dt;
-
     driftTimer += dt;
-    if (driftTimer > driftDuration) {
+
+    if (driftTimer >= driftDuration) {
       driftTimer = 0;
-      driftDuration = 0.5 + Random().nextDouble() * 1.5; // 0.5–2 s
-      direction = Random().nextBool() ? 1 : -1; // wechselt Richtung
+      driftDuration = 1 + random.nextDouble() * 3; // 1–4 s
+      targetSpeed = (random.nextBool() ? 1 : -1) * (50 + random.nextDouble() * 100);
     }
 
-    if(position.x <= 0 || position.x >= game.size.x) {
-      direction = direction * -1;
-    }
+    horizontalSpeed = lerpDouble(horizontalSpeed, targetSpeed, dt * 2)!;
 
-    position.x += sin(time * 2) * 40 * dt + (direction * horizontalSpeed * dt);
-    position.y += speed * dt;
+    position.x += horizontalSpeed * dt;
+    position.y += sin(time * 0.8) * 10 * dt + speedY * dt;
 
-    if (position.y > game.size.y) {
-      removeFromParent();
+    if (position.x < size.x / 2) {
+      position.x = size.x / 2;
+      horizontalSpeed = horizontalSpeed.abs();
+      targetSpeed = horizontalSpeed;
+    } else if (position.x > game.size.x - size.x / 2) {
+      position.x = game.size.x - size.x / 2;
+      horizontalSpeed = -horizontalSpeed.abs();
+      targetSpeed = horizontalSpeed;
     }
   }
 
