@@ -44,7 +44,7 @@ void main() async {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text(
-                      "🚀 Alien Attack 🚀",
+                      "🛸 Alien Attack 🛸",
                       style: TextStyle(
                         fontSize: 28,
                         color: Colors.white,
@@ -54,9 +54,11 @@ void main() async {
                     ),
                     const SizedBox(height: 16),
                     const Text(
+                      "Your mission: Survive the enemy waves and defeat the final boss!\n\n"
                       "Controls:\n\n"
-                          "W = up\nA = left\nS = down\nD = right\nSpace = shoot\nP = pause\nEsc = exit\n\n"
-                          "Mission: Survive the enemy waves and defeat the final boss!",
+                          "WASD = steer\nSpace = shoot\n"
+                          "P = pause\nEsc = exit\n\n"
+                          "Or use Mouse/Finger",
                       style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.4),
                       textAlign: TextAlign.center,
                     ),
@@ -268,7 +270,7 @@ void main() async {
               child: Align(
                 alignment: Alignment(0, -.4),
                 child: Text(
-                  "Get ready for the second wave!",
+                  "Too easy? Take this!",
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.amberAccent,
@@ -285,7 +287,24 @@ void main() async {
               child: Align(
                 alignment: Alignment(0, -.4),
                 child: Text(
-                  "You made them angry. Watch out!",
+                  "Don't overdo it!",
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.amberAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              )
+          );
+        },
+        'StartWave4': (BuildContext context, AlienAttack game) {
+          return Visibility(
+              visible: !game.paused,
+              child: Align(
+                alignment: Alignment(0, -.4),
+                child: Text(
+                  "They called for their mommy!",
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.amberAccent,
@@ -399,6 +418,8 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
   late Player player;
   Vector2? fingerPosition;
 
+  final int testProgress = 3;
+
   late SpawnComponent enemyAlphaSpawner;
   late SpawnComponent enemyBetaSpawner;
   late SpawnComponent powerupSpawner;
@@ -436,7 +457,9 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
       'powerup1.png',
       'powerup2.png',
       'powerup3.png',
+      'boss_shadow.png',
       'boss.png',
+      'fireball.png',
     ]);
 
     player = Player();
@@ -507,7 +530,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
     started = true;
     starsCollected = 0;
     lifes = 3;
-    currentWave = 0;
+    currentWave = 0 + testProgress;
     spawnCount = 0;
     wavePauseTimer = 0;
     inWavePause = false;
@@ -515,7 +538,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
     clear(); // Reset Enemies, Bullets, etc.
 
     player.position = Vector2(size.x / 2, size.y - 100);
-    player.shootingPower = 1;
+    player.shootingPower = 1 + testProgress;
     player.isInvisible = false;
     if (!player.isMounted) add(player);
 
@@ -636,15 +659,47 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
     }
 
     if (currentWave == 4) {
-      add(Boss());
-      powerupSpawner = SpawnComponent(
-        factory: (index) => PowerUp(type: 1),
-        period: 3,
-        area: Rectangle.fromLTWH(200, 0, size.x - 200, 0),
-        random: Random(),
-        spawnCount: 1,
-      );
-      add(powerupSpawner);
+      overlays.add("StartWave4");
+      Future.delayed(const Duration(seconds: 2), () {
+        overlays.remove("StartWave4");
+        spawnCount = 50;
+        enemyAlphaSpawner = SpawnComponent(
+          factory: (index) {
+            return EnemyAlpha(speed: 300, straight: false);
+          },
+          period: .4,
+          area: Rectangle.fromLTWH(40, 0, size.x - 80, 0),
+          random: Random(),
+          spawnCount: spawnCount,
+        );
+        add(enemyAlphaSpawner);
+        astroidSpawner = SpawnComponent(
+          factory: (i) {
+            final random = Random().nextDouble();
+            final randomX = random * size.x;
+            final dir = Vector2(random*2-1, 1); // nach unten
+            final speed = 40 + Random().nextDouble() * 60;
+            return Asteroid(speed: speed, direction: dir)
+              ..position = Vector2(randomX, -50);
+          },
+          period: 4,
+          area: Rectangle.fromLTWH(0, 0, size.x, 0),
+          random: Random(),
+          spawnCount: 20,
+        );
+        add(astroidSpawner);
+        final intro = BossIntro(
+          onIntroComplete: (Vector2 pos, double scale) {
+            final boss = Boss(onBossRemoved: onSpawnFinished)
+              ..position = pos
+              ..scale = Vector2.all(scale)
+              ..anchor = Anchor.center;
+            add(boss);
+          },
+        );
+
+        add(intro);
+      });
     }
 
     if (currentWave >= 5) {
@@ -675,8 +730,11 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
       component is EnemyMissile1 ||
       component is Asteroid ||
       component is PowerUp ||
-      component is Boss
+      component is Boss ||
+      component is Fireball
     ).toList();
+
+    player.isInvisible = true;
 
     for (final c in toRemove) {
       c.removeFromParent();
@@ -916,11 +974,11 @@ class PlayerBullet extends SpriteAnimationComponent with HasGameReference<AlienA
 }
 
 class EnemyAlpha extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
-  final VoidCallback onEnemyRemoved;
+  final VoidCallback? onEnemyRemoved;
   final int speed;
   final bool straight;
 
-  EnemyAlpha({required this.onEnemyRemoved, this.speed = 100, this.straight = true}) : super(size: Vector2.all(50));
+  EnemyAlpha({this.onEnemyRemoved, this.speed = 100, this.straight = true}) : super(size: Vector2.all(50));
 
   final random = Random();
   static const spriteHeight = 50.0;
@@ -966,7 +1024,7 @@ class EnemyAlpha extends SpriteAnimationComponent with HasGameReference<AlienAtt
 
     if (position.y > game.size.y + EnemyAlpha.spriteHeight) {
       removeFromParent();
-      onEnemyRemoved();
+      onEnemyRemoved?.call();
     }
   }
 
@@ -978,13 +1036,13 @@ class EnemyAlpha extends SpriteAnimationComponent with HasGameReference<AlienAtt
       removeFromParent();
       other.removeFromParent();
       game.add(Explosion(position: position, size: Vector2.all(60)));
-      onEnemyRemoved();
+      onEnemyRemoved?.call();
     }
   }
 }
 
 class EnemyMissile1 extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
-  EnemyMissile1() : super(size: Vector2(25, 50), anchor: Anchor.center);
+  EnemyMissile1() : super(size: Vector2(20, 50), anchor: Anchor.center);
 
   final speed = 400;
 
@@ -1179,9 +1237,59 @@ class PowerUp extends SpriteAnimationComponent with HasGameReference<AlienAttack
   }
 }
 
+class BossIntro extends SpriteAnimationComponent
+    with HasGameReference<AlienAttack> {
+  final void Function(Vector2 position, double scale) onIntroComplete;
+
+  BossIntro({required this.onIntroComplete})
+      : super(size: Vector2.all(200), anchor: Anchor.center);
+
+  @override
+  Future<void> onLoad() async {
+    position = Vector2(game.size.x / 2, game.size.y + 300); // Start unten
+    scale = Vector2.all(3); // Etwas größer als Boss
+
+    animation = await game.loadSpriteAnimation(
+      'boss_shadow.png',
+      SpriteAnimationData.sequenced(
+        amount: 1,
+        textureSize: Vector2(600, 600),
+        stepTime: 0.1,
+      ),
+    );
+
+    // 1️⃣ Hochfahren
+    final moveUp = MoveEffect.to(
+      Vector2(game.size.x / 2, 100), // Zielposition
+      EffectController(duration: 2.0, curve: Curves.easeOutQuad),
+      onComplete: () {
+        // 2️⃣ Schrumpfen auf Bossgröße
+        final shrink = ScaleEffect.to(
+          Vector2.all(1.0), // exakte Bossgröße
+          EffectController(duration: 2.0, curve: Curves.easeInOut),
+          onComplete: () {
+            onIntroComplete(position.clone(), scale.x);
+            removeFromParent();
+          },
+        );
+        add(shrink);
+      },
+    );
+
+    add(moveUp);
+  }
+}
+
 class Boss extends SpriteAnimationComponent
     with HasGameReference<AlienAttack>, CollisionCallbacks {
-  Boss() : super(size: Vector2.all(200));
+  final VoidCallback onBossRemoved;
+
+  Boss({required this.onBossRemoved}) : super(size: Vector2.all(200));
+
+  double maxHealth = 100;
+  double currentHealth = 100;
+
+  late BossHealthBar healthBar;
 
   double speedY = 10;
   double horizontalSpeed = 0;      // aktuelle horizontale Geschwindigkeit
@@ -1189,6 +1297,9 @@ class Boss extends SpriteAnimationComponent
   double driftTimer = 0;
   double driftDuration = 2;
   double time = 0;
+
+  double fireTimer = 0;
+  double fireInterval = 3;
 
   final random = Random();
 
@@ -1209,8 +1320,25 @@ class Boss extends SpriteAnimationComponent
     position = Vector2(game.size.x / 2, 100);
     add(CircleHitbox());
 
+    // HealthBar hinzufügen
+    healthBar = BossHealthBar(pos: Vector2(size.x/2 + 50, -10)); // fix über dem Boss
+    add(healthBar);
+
     // initial zufällige Zielgeschwindigkeit
     targetSpeed = (random.nextBool() ? 1 : -1) * (50 + random.nextDouble() * 100);
+  }
+
+  void takeDamage(double amount) {
+    currentHealth -= amount;
+    if (currentHealth < 0) currentHealth = 0;
+    healthBar.updateHealth(currentHealth / maxHealth);
+
+    if (currentHealth <= 0) {
+      removeFromParent();
+      game.add(Explosion(position: position, size: Vector2.all(500)));
+      game.spawnCount = 0;
+      onBossRemoved();
+    }
   }
 
   @override
@@ -1218,26 +1346,53 @@ class Boss extends SpriteAnimationComponent
     super.update(dt);
     time += dt;
     driftTimer += dt;
+    fireTimer += dt;
 
+    // Zielrichtung regelmäßig ändern
     if (driftTimer >= driftDuration) {
       driftTimer = 0;
       driftDuration = 1 + random.nextDouble() * 3; // 1–4 s
-      targetSpeed = (random.nextBool() ? 1 : -1) * (50 + random.nextDouble() * 100);
+      targetSpeed = (random.nextBool() ? 1 : -1) * (100 + random.nextDouble() * 300);
     }
 
+    // Geschwindigkeit smooth an Zielgeschwindigkeit angleichen
     horizontalSpeed = lerpDouble(horizontalSpeed, targetSpeed, dt * 2)!;
 
+    // Position updaten
     position.x += horizontalSpeed * dt;
     position.y += sin(time * 0.8) * 10 * dt + speedY * dt;
 
-    if (position.x < size.x / 2) {
-      position.x = size.x / 2;
+    // Smooth Neigung (max ±0.2 rad)
+    double targetAngle = (horizontalSpeed / 400).clamp(-0.2, 0.2);
+    angle = lerpDouble(angle, targetAngle, dt * 3)!;
+
+    // Bildschirmbegrenzung prüfen
+    if (position.x < size.x / 2 - 50) {
+      position.x = size.x / 2 - 50;
       horizontalSpeed = horizontalSpeed.abs();
       targetSpeed = horizontalSpeed;
-    } else if (position.x > game.size.x - size.x / 2) {
-      position.x = game.size.x - size.x / 2;
+    } else if (position.x > game.size.x - size.x / 2 + 50) {
+      position.x = game.size.x - size.x / 2 + 50;
       horizontalSpeed = -horizontalSpeed.abs();
       targetSpeed = horizontalSpeed;
+    }
+
+    if (fireTimer >= fireInterval) {
+      fireTimer = 0;
+      shootFireballs();
+    }
+  }
+
+  void shootFireballs() {
+    final center = position.clone();
+
+    final count = 12;
+    for (int i = 0; i < count; i++) {
+      final angle = (2 * pi / count) * i;
+      final dir = Vector2(cos(angle), sin(angle));
+      final fireball = Fireball(direction: dir, speed: 250)
+        ..position = center.clone();
+      game.add(fireball);
     }
   }
 
@@ -1249,7 +1404,72 @@ class Boss extends SpriteAnimationComponent
     if (other is PlayerBullet) {
       other.removeFromParent();
       game.add(Explosion(position: intersectionPoints.first, size: Vector2.all(80)));
+      takeDamage(.25);
     }
   }
 }
 
+class Fireball extends SpriteComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
+  Vector2 direction;
+  double speed;
+
+  Fireball({required this.direction, this.speed = 150})
+      : super(size: Vector2.all(40), anchor: Anchor.center);
+
+  @override
+  Future<void> onLoad() async {
+    sprite = await game.loadSprite('fireball.png');
+    add(CircleHitbox());
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    position += direction.normalized() * speed * dt;
+
+    angle = angle + dt * 10;
+
+    // Entfernen, wenn außerhalb des Screens
+    if (position.y > game.size.y + 50 ||
+        position.y < -50 ||
+        position.x < -50 ||
+        position.x > game.size.x + 50) {
+      removeFromParent();
+    }
+  }
+}
+
+class BossHealthBar extends PositionComponent {
+  Vector2 pos;
+  double progress = 1.0;
+
+  BossHealthBar({required this.pos})
+      : super(size: Vector2(100, 8), anchor: Anchor.center);
+
+  @override
+  FutureOr<void> onLoad() {
+    position = pos;
+  }
+
+  void updateHealth(double newProgress) {
+    progress = newProgress.clamp(0.0, 1.0);
+  }
+
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+
+    final bgRect = Rect.fromLTWH(-size.x / 2, -size.y / 2, size.x, size.y);
+    final fgRect = Rect.fromLTWH(-size.x / 2, -size.y / 2, size.x * progress, size.y);
+
+    canvas.drawRect(bgRect, Paint()..color = const Color(0xFF444444));
+    canvas.drawRect(fgRect, Paint()..color = const Color(0xFFFF3333));
+    canvas.drawRect(
+      bgRect,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1,
+    );
+  }
+}

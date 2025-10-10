@@ -76,7 +76,9 @@ flutter:
     - assets/images/powerup1.png
     - assets/images/powerup2.png
     - assets/images/powerup3.png
+    - assets/images/boss_shadow.png
     - assets/images/boss.png
+    - assets/images/fireball.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
