@@ -1,7 +1,6 @@
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import '../main.dart';
-import 'player_lifes.dart';
 
 class Hud extends PositionComponent with HasGameReference<AlienAttack> {
   Hud({
@@ -19,27 +18,17 @@ class Hud extends PositionComponent with HasGameReference<AlienAttack> {
   @override
   Future<void> onLoad() async {
     _scoreTextComponent = TextComponent(
-      text: '${game.starsCollected}',
+      text: '${game.score}',
       textRenderer: TextPaint(
         style: const TextStyle(
           fontSize: 32,
           color: Color.fromRGBO(255, 0, 0, 1.0),
         ),
       ),
-      anchor: Anchor.center,
-      position: Vector2(game.size.x - 30, 20),
+      anchor: Anchor.centerRight,
+      position: Vector2(game.size.x - 20, 20),
     );
     add(_scoreTextComponent);
-
-    final starSprite = await game.loadSprite('star.png');
-    add(
-      SpriteComponent(
-        sprite: starSprite,
-        position: Vector2(game.size.x - 70, 20),
-        size: Vector2.all(32),
-        anchor: Anchor.center,
-      ),
-    );
 
     double positionX = -10;
     for (var i = 1; i <= 3; i++) {
@@ -47,7 +36,7 @@ class Hud extends PositionComponent with HasGameReference<AlienAttack> {
       await add(
         PlayerLifesComponent(
           lifesNumber: i,
-          position: Vector2(positionX, 5),
+          position: Vector2(positionX, 10),
           size: Vector2(20, 32),
         ),
       );
@@ -56,6 +45,51 @@ class Hud extends PositionComponent with HasGameReference<AlienAttack> {
 
   @override
   void update(double dt) {
-    _scoreTextComponent.text = '${game.starsCollected}';
+    _scoreTextComponent.text = '${game.score}';
+  }
+}
+
+enum LifesState {
+  available,
+  unavailable,
+}
+
+class PlayerLifesComponent extends SpriteGroupComponent<LifesState>
+    with HasGameReference<AlienAttack> {
+  final int lifesNumber;
+
+  PlayerLifesComponent({
+    required this.lifesNumber,
+    required super.position,
+    required super.size,
+    super.scale,
+    super.angle,
+    super.anchor,
+    super.priority,
+  });
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+
+    final availableSprite = await game.loadSprite('life.png');
+    final unavailableSprite = await game.loadSprite('life_lost.png');
+
+    sprites = {
+      LifesState.available: availableSprite,
+      LifesState.unavailable: unavailableSprite,
+    };
+
+    current = LifesState.available;
+  }
+
+  @override
+  void update(double dt) {
+    if (game.lifes < lifesNumber) {
+      current = LifesState.unavailable;
+    } else {
+      current = LifesState.available;
+    }
+    super.update(dt);
   }
 }

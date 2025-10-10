@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:async';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
@@ -26,7 +25,7 @@ class BossEnemy extends SpriteComponent with HasGameReference<AlienAttack>, Coll
       if (position.y > 100) entering = false;
     } else {
       // Einfaches horizontales Pendeln
-      position.x += sin(game.elapsedTime() * 2) * speed * dt;
+      // position.x += sin(game.elapsedTime() * 2) * speed * dt;
     }
   }
 
