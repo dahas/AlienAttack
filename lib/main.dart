@@ -358,7 +358,7 @@ void main() async {
                       ),
                       const SizedBox(height: 16),
                       const Text(
-                        "Well played! You taught them a lesson!",
+                        "Well played!\nYou taught them a lesson!",
                         style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.4),
                         textAlign: TextAlign.center,
                       ),
@@ -418,7 +418,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
   late Player player;
   Vector2? fingerPosition;
 
-  final int testProgress = 3;
+  final int testProgress = 0;
 
   late SpawnComponent enemyAlphaSpawner;
   late SpawnComponent enemyBetaSpawner;
