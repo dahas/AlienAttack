@@ -5,7 +5,7 @@
     "display": "standalone",
     "background_color": "#00304C",
     "theme_color": "#00304C",
-    "description": "A space shooter demo.",
+    "description": "A space shooter.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
