@@ -270,7 +270,7 @@ void main() async {
               child: Align(
                 alignment: Alignment(0, -.4),
                 child: Text(
-                  "Prepare for the first strike!",
+                  "Ready?",
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.amberAccent,
@@ -287,7 +287,7 @@ void main() async {
               child: Align(
                 alignment: Alignment(0, -.4),
                 child: Text(
-                  "Too easy? Take this!",
+                  "Not bad!",
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.amberAccent,
@@ -304,7 +304,7 @@ void main() async {
               child: Align(
                 alignment: Alignment(0, -.4),
                 child: Text(
-                  "Don't overdo it!",
+                  "They are not amused!",
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.amberAccent,
@@ -321,7 +321,7 @@ void main() async {
               child: Align(
                 alignment: Alignment(0, -.4),
                 child: Text(
-                  "They called for their mommy!",
+                  "They called mommy!",
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.amberAccent,
@@ -433,7 +433,9 @@ void main() async {
 
 class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisionDetection {
   late Player player;
-  Vector2? fingerPosition;
+
+  Vector2? dragStartFinger;
+  Vector2? dragStartPlayer;
 
   final int testProgress = 0;
 
@@ -452,9 +454,22 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
 
   double time = 0;
 
+  late Sprite? bulletSprite;
+  late Sprite? asteroid1Sprite;
+  late Sprite? asteroid2Sprite;
+  late Sprite? asteroid3Sprite;
+  late Sprite? asteroid4Sprite;
+  late Sprite? asteroid5Sprite;
+  late Sprite? fireballSprite;
+
+  late SpriteAnimation enemyAnimation;
+  late SpriteAnimation sandburstAnimation;
+
   @override
   Future<void> onLoad() async {
-    await images.loadAll([ // Preload and cache images
+    await SoundManager.init();
+
+    await images.loadAll([
       'player.png',
       'bullet.png',
       'enemy.png',
@@ -479,7 +494,33 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
       'fireball.png',
     ]);
 
-    await SoundManager.init();
+    bulletSprite = Sprite(images.fromCache("bullet.png"));
+    asteroid1Sprite = Sprite(images.fromCache("asteroid1.png"));
+    asteroid2Sprite = Sprite(images.fromCache("asteroid2.png"));
+    asteroid3Sprite = Sprite(images.fromCache("asteroid3.png"));
+    asteroid4Sprite = Sprite(images.fromCache("asteroid4.png"));
+    asteroid5Sprite = Sprite(images.fromCache("asteroid5.png"));
+    fireballSprite = Sprite(images.fromCache("fireball.png"));
+
+    enemyAnimation = await loadSpriteAnimation(
+      'enemy.png',
+      SpriteAnimationData.sequenced(
+        amount: 2,
+        loop: true,
+        stepTime: .3,
+        textureSize: Vector2(483, 483),
+      ),
+    );
+
+    sandburstAnimation = await loadSpriteAnimation(
+      'sandburst.png',
+      SpriteAnimationData.sequenced(
+        amount: 4,
+        loop: false,
+        stepTime: .1,
+        textureSize: Vector2(50, 50),
+      ),
+    );
 
     player = Player();
 
@@ -506,23 +547,31 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
 
   @override
   void onPanStart(DragStartInfo info) {
-    player.position = info.eventPosition.global;
+    dragStartFinger = info.eventPosition.global.clone();
+    dragStartPlayer = player.position.clone();
     player.shooting = true;
   }
 
   @override
   void onPanUpdate(DragUpdateInfo info) {
-    Vector2 pos = info.eventPosition.global;
-    player.position = Vector2(pos.x, pos.y);
+    if (dragStartFinger == null || dragStartPlayer == null) return;
+
+    final currentFinger = info.eventPosition.global;
+    final delta = currentFinger - dragStartFinger!;
+    player.position = dragStartPlayer! + delta;
   }
 
   @override
   void onPanEnd(DragEndInfo info) {
+    dragStartFinger = null;
+    dragStartPlayer = null;
     player.shooting = false;
   }
 
   @override
   void onPanCancel() {
+    dragStartFinger = null;
+    dragStartPlayer = null;
     player.shooting = false;
   }
 
@@ -803,6 +852,21 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
 
     return KeyEventResult.handled;
   }
+
+  @override
+  void onDispose() {
+    SoundManager.dispose();
+
+    bulletSprite = null;
+    asteroid1Sprite = null;
+    asteroid2Sprite = null;
+    asteroid3Sprite = null;
+    asteroid4Sprite = null;
+    asteroid5Sprite = null;
+    fireballSprite = null;
+
+    super.onDispose();
+  }
 }
 
 class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
@@ -836,7 +900,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
       ),
     );
 
-    position = Vector2(game.size.x / 2, game.size.y - 100);
+    position = Vector2(game.size.x / 2, game.size.y - 300);
 
     add(CircleHitbox());
   }
@@ -934,13 +998,13 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
 
   @override
   void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
-    if (isProtected || isInvisible) return;
     super.onCollisionStart(intersectionPoints, other);
     if(other is Asteroid) {
       position = Vector2(previousPosition.x, previousPosition.y + 20);
     } else if(other is PowerUp) {
       shootingPower++;
     } else if(other is! PlayerBullet) {
+      if (isProtected || isInvisible) return;
       game.add(Explosion(position: position, size: Vector2.all(120)));
       game.lifes--;
       game.score -= 100;
@@ -962,7 +1026,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
   }
 }
 
-class PlayerBullet extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
+class PlayerBullet extends SpriteComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
   Vector2 direction;
   double speed;
 
@@ -972,15 +1036,7 @@ class PlayerBullet extends SpriteAnimationComponent with HasGameReference<AlienA
   Future<void> onLoad() async {
     super.onLoad();
 
-    animation = await game.loadSpriteAnimation(
-      'bullet.png',
-      SpriteAnimationData.sequenced(
-        amount: 5,
-        loop: true,
-        stepTime: .1,
-        textureSize: Vector2(35, 68),
-      ),
-    );
+    sprite = game.bulletSprite;
 
     add(
       RectangleHitbox(
@@ -1020,15 +1076,7 @@ class EnemyAlpha extends SpriteAnimationComponent with HasGameReference<AlienAtt
 
     direction = Random().nextBool() ? 1 : -1;
 
-    animation = await game.loadSpriteAnimation(
-      'enemy.png',
-      SpriteAnimationData.sequenced(
-        amount: 2,
-        loop: true,
-        stepTime: .3,
-        textureSize: Vector2(483, 483),
-      ),
-    );
+    animation = game.enemyAnimation;
 
     add(RectangleHitbox());
 
@@ -1120,17 +1168,14 @@ class Asteroid extends SpriteComponent with HasGameReference<AlienAttack>, Colli
 
   @override
   Future<void> onLoad() async {
-
-    final spriteNames = [
-      'asteroid1.png',
-      'asteroid2.png',
-      'asteroid3.png',
-      'asteroid4.png',
-      'asteroid5.png',
-    ];
-
-    final randomSprite = spriteNames[Random().nextInt(spriteNames.length)];
-    sprite = await game.loadSprite(randomSprite);
+    final int randomNumber = Random().nextInt(5);
+    switch(randomNumber) {
+      case 1: sprite = game.asteroid1Sprite; break;
+      case 2: sprite = game.asteroid2Sprite; break;
+      case 3: sprite = game.asteroid3Sprite; break;
+      case 4: sprite = game.asteroid4Sprite; break;
+      default: sprite = game.asteroid5Sprite; break;
+    }
 
     add(CircleHitbox(
         collisionType: CollisionType.active)
@@ -1195,15 +1240,7 @@ class SandBurst extends SpriteAnimationComponent with HasGameReference<AlienAtta
   @override
   Future<void> onLoad() async {
 
-    animation = await game.loadSpriteAnimation(
-      'sandburst.png',
-      SpriteAnimationData.sequenced(
-        amount: 4,
-        loop: false,
-        stepTime: .1,
-        textureSize: Vector2(50, 50),
-      ),
-    );
+    animation = game.sandburstAnimation;
 
     animationTicker?.onComplete = removeFromParent;
   }
@@ -1452,6 +1489,7 @@ class Boss extends SpriteAnimationComponent
 
   void shootFireballs() {
     final center = position.clone();
+    SoundManager.playFireballs(volume: 1);
 
     final count = 12;
     for (int i = 0; i < count; i++) {
@@ -1460,7 +1498,6 @@ class Boss extends SpriteAnimationComponent
       final fireball = Fireball(direction: dir, speed: 250)
         ..position = center.clone();
       game.add(fireball);
-      SoundManager.playFireballs(volume: 1);
     }
   }
 
@@ -1486,7 +1523,7 @@ class Fireball extends SpriteComponent with HasGameReference<AlienAttack>, Colli
 
   @override
   Future<void> onLoad() async {
-    sprite = await game.loadSprite('fireball.png');
+    sprite = game.fireballSprite;
     add(CircleHitbox());
   }
 

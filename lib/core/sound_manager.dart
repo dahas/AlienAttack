@@ -89,5 +89,11 @@ class SoundManager {
     _sandburstPool = null;
     _explosionEnemyPool = null;
     _fireballsPool = null;
+
+    _powerUp1 = null;
+    _powerUp2 = null;
+    _powerUp3 = null;
+    _explosionPlayer = null;
+    _explosionBoss = null;
   }
 }
