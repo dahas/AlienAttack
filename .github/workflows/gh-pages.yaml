@@ -14,12 +14,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+      - name: Deploy to GH-Pages
+        uses: bluefireteam/flutter-gh-pages@v8
         with:
-          flutter-version: '3.35.5'
-          channel: 'stable'
-      - uses: bluefireteam/flutter-gh-pages@v8
-        with:
-          baseHref: /AlienAttack/
-          webRenderer: canvaskit
+          workingDir: build/web
+          targetBranch: gh-pages
