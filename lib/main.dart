@@ -547,6 +547,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
 
   @override
   void onPanStart(DragStartInfo info) {
+    if(!started) return;
     dragStartFinger = info.eventPosition.global.clone();
     dragStartPlayer = player.position.clone();
     player.shooting = true;
