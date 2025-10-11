@@ -6,12 +6,14 @@ import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
 import 'package:flame/experimental.dart';
 import 'package:flame/input.dart';
+import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/services.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/parallax.dart';
+import 'core/sound_manager.dart';
 import 'overlays/hud.dart';
 
 void main() async {
@@ -458,8 +460,8 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
       'enemy.png',
       'life_lost.png',
       'life.png',
-      'star.png',
       'explosion.png',
+      'sandburst.png',
       'stars_0.png',
       'stars_1.png',
       'stars_2.png',
@@ -476,6 +478,8 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
       'boss.png',
       'fireball.png',
     ]);
+
+    await SoundManager.init();
 
     player = Player();
 
@@ -552,6 +556,8 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
     wavePauseTimer = 0;
     inWavePause = false;
 
+    SoundManager.playBackgroundMusic();
+
     clear(); // Reset Enemies, Bullets, etc.
 
     player.position = Vector2(size.x / 2, size.y - 100);
@@ -597,7 +603,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
       overlays.add("StartWave2");
       Future.delayed(const Duration(seconds: 2), () {
         overlays.remove("StartWave2");
-        spawnCount = 25;
+        spawnCount = 30;
         enemyAlphaSpawner = SpawnComponent(
           factory: (index) {
             return EnemyAlpha(onEnemyRemoved: onSpawnFinished, speed: 250, straight: false, value: 50);
@@ -638,7 +644,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
       overlays.add("StartWave3");
       Future.delayed(const Duration(seconds: 2), () {
         overlays.remove("StartWave3");
-        spawnCount = 30;
+        spawnCount = 50;
         enemyAlphaSpawner = SpawnComponent(
           factory: (index) {
             return EnemyAlpha(onEnemyRemoved: onSpawnFinished, speed: 300, straight: false, value: 75);
@@ -679,7 +685,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
       overlays.add("StartWave4");
       Future.delayed(const Duration(seconds: 2), () {
         overlays.remove("StartWave4");
-        spawnCount = 50;
+        spawnCount = 70;
         enemyAlphaSpawner = SpawnComponent(
           factory: (index) {
             return EnemyAlpha(speed: 300, straight: false);
@@ -765,8 +771,10 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
   void pause() {
     paused = !paused; // Toggle
     if(paused) {
+      FlameAudio.bgm.pause();
       overlays.add("Paused");
     } else {
+      FlameAudio.bgm.resume();
       overlays.remove("Paused");
     }
   }
@@ -878,11 +886,11 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
           final bulletC = PlayerBullet(direction: Vector2(0, -1), speed: 500);
           bulletC.position = Vector2(playerPos.x, playerPos.y - 50);
           game.add(bulletC);
-          fireCooldown = .2;
+          fireCooldown = .3;
           break;
         case 3:
-          final bulletL = PlayerBullet(direction: Vector2(0, -1), speed: 500);
-          final bulletR = PlayerBullet(direction: Vector2(0, -1), speed: 500);
+          final bulletL = PlayerBullet(direction: Vector2(0, -1), speed: 550);
+          final bulletR = PlayerBullet(direction: Vector2(0, -1), speed: 550);
           bulletL.position = Vector2(playerPos.x-10, playerPos.y - 30);
           bulletR.position = Vector2(playerPos.x+10, playerPos.y - 30);
           game.add(bulletL);
@@ -936,6 +944,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<AlienAttack>
       game.add(Explosion(position: position, size: Vector2.all(120)));
       game.lifes--;
       game.score -= 100;
+      SoundManager.playExplosionPlayer();
       respawn();
     }
   }
@@ -1056,6 +1065,7 @@ class EnemyAlpha extends SpriteAnimationComponent with HasGameReference<AlienAtt
       other.removeFromParent();
       game.score += value;
       game.add(Explosion(position: position, size: Vector2.all(60)));
+      SoundManager.playExplosionEnemy();
       onEnemyRemoved?.call();
     }
   }
@@ -1144,7 +1154,8 @@ class Asteroid extends SpriteComponent with HasGameReference<AlienAttack>, Colli
 
     if(other is PlayerBullet) {
       other.removeFromParent();
-      game.add(Explosion(position: intersectionPoints.first, size: Vector2.all(20)));
+      game.add(SandBurst(position: intersectionPoints.first, size: Vector2.all(30)));
+      SoundManager.playSandburst(volume: .6);
     }
   }
 }
@@ -1177,33 +1188,58 @@ class Explosion extends SpriteAnimationComponent with HasGameReference<AlienAtta
   }
 }
 
+class SandBurst extends SpriteAnimationComponent with HasGameReference<AlienAttack> {
+  SandBurst({super.position, super.size})
+      : super(anchor: Anchor.center, priority: 10);
+
+  @override
+  Future<void> onLoad() async {
+
+    animation = await game.loadSpriteAnimation(
+      'sandburst.png',
+      SpriteAnimationData.sequenced(
+        amount: 4,
+        loop: false,
+        stepTime: .1,
+        textureSize: Vector2(50, 50),
+      ),
+    );
+
+    animationTicker?.onComplete = removeFromParent;
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+
+    position.y += dt * 40;
+  }
+}
+
 class PowerUp extends SpriteAnimationComponent with HasGameReference<AlienAttack>, CollisionCallbacks {
   int? type;
 
   PowerUp({this.type}) : super(size: Vector2(50, 50), anchor: Anchor.center, priority: 10);
 
-  // late double direction;
-
   double speedY = 50;
-  double horizontalSpeed = 0;      // aktuelle horizontale Geschwindigkeit
-  double targetSpeed = 0;          // Zielgeschwindigkeit
+  double horizontalSpeed = 0;
+  double targetSpeed = 0;
   double driftTimer = 0;
   double driftDuration = 2;
   double time = 0;
 
   final random = Random();
 
+  late String image;
+
   @override
   Future<void> onLoad() async {
     super.onLoad();
-    String image;
     switch(type) {
       case 1: image = 'powerup1.png'; break;
       case 2: image = 'powerup2.png'; break;
-      default: image = 'powerup3.png'; break;
+      default: image = 'powerup3.png';break;
     }
-
-    // direction = Random().nextBool() ? 1 : -1;
 
     animation = await game.loadSpriteAnimation(
       image,
@@ -1253,6 +1289,11 @@ class PowerUp extends SpriteAnimationComponent with HasGameReference<AlienAttack
     super.onCollisionStart(intersectionPoints, other);
     if (other is Player) {
       removeFromParent();
+      switch(type) {
+        case 1: SoundManager.playPowerUp1(); break;
+        case 2: SoundManager.playPowerUp2(); break;
+        default: SoundManager.playPowerUp3(); break;
+      }
     }
   }
 }
@@ -1358,6 +1399,7 @@ class Boss extends SpriteAnimationComponent
       game.score += 1000;
       game.add(Explosion(position: position, size: Vector2.all(500)));
       game.spawnCount = 0;
+      SoundManager.playExplosionBoss(volume: 1);
       onBossRemoved();
     }
   }
@@ -1418,6 +1460,7 @@ class Boss extends SpriteAnimationComponent
       final fireball = Fireball(direction: dir, speed: 250)
         ..position = center.clone();
       game.add(fireball);
+      SoundManager.playFireballs(volume: 1);
     }
   }
 
