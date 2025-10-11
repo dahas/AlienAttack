@@ -1,6 +1,6 @@
 {
     "name": "Alien Attack",
-    "short_name": "alien_attack",
+    "short_name": "Alien Attack",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#00304C",
