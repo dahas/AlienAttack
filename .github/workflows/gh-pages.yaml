@@ -10,32 +10,15 @@ permissions:
   id-token: write
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.35.5'
-
-      - name: Enable Flutter Web
-        run: flutter config --enable-web
-        working-directory: AlienAttack
-
-      - name: Install dependencies
-        run: flutter pub get
-        working-directory: AlienAttack
-
-      - name: Build Flutter Web
-        run: flutter build web --release --base-href /AlienAttack/
-        working-directory: AlienAttack
-
-      - name: Deploy to GitHub Pages
+      - name: Deploy to GH-Pages
         uses: bluefireteam/flutter-gh-pages@v8
         with:
-          workingDir: AlienAttack/build/web
+          workingDir: build/web
           targetBranch: gh-pages
