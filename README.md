@@ -1,6 +1,6 @@
 # ALIEN ATTACK
 
-This space shooter is a demo project.
+This space shooter is a demo project. It´s created with Flame the Flutter Game Engine.
 
 ### How to play
 
