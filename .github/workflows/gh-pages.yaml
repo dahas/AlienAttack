@@ -11,8 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 'stable'
       - run: flutter build web --release --base-href /AlienAttack/ --pwa-strategy=none
       - uses: bluefireteam/flutter-gh-pages@v9
         with:
