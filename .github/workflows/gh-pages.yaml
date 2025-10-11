@@ -17,5 +17,5 @@ jobs:
       - name: Deploy to GH-Pages
         uses: bluefireteam/flutter-gh-pages@v8
         with:
-          workingDir: build/web
+          workingDir: /build/web
           targetBranch: gh-pages
