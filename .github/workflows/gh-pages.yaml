@@ -1,24 +1,17 @@
-name: Deploy to GitHub Pages
+name: Gh-Pages
 
 on:
   push:
     branches: [ master ]
 
-permissions:
-  contents: write
-  pages: write
-  id-token: write
-
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Deploy to GH-Pages
-        uses: bluefireteam/flutter-gh-pages@v8
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+      - uses: bluefireteam/flutter-gh-pages@v8
         with:
-          workingDir: build/web
-          targetBranch: gh-pages
+          baseHref: /AlienAttack/
+          webRenderer: canvaskit
