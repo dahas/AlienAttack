@@ -228,7 +228,7 @@ void main() async {
               child: Align(
                 alignment: Alignment(0, -.4),
                 child: Text(
-                  "Bereit? 👽",
+                  "Bereit? 😎",
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.amberAccent,
@@ -245,7 +245,7 @@ void main() async {
               child: Align(
                 alignment: Alignment(0, -.4),
                 child: Text(
-                  "Weiter so! 😎",
+                  "Weiter so! 👍",
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.amberAccent,
@@ -262,7 +262,7 @@ void main() async {
               child: Align(
                 alignment: Alignment(0, -.4),
                 child: Text(
-                  "Sie haben schon die Hose voll! 💩",
+                  "Sie haben die Hosen voll! 💩",
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.amberAccent,
@@ -279,7 +279,7 @@ void main() async {
               child: Align(
                 alignment: Alignment(0, -.4),
                 child: Text(
-                  "Jetzt kommt ihre Mama! 😄",
+                  "Sie haben Mama gerufen! 😄",
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.amberAccent,
@@ -313,7 +313,7 @@ void main() async {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text(
-                        "Congratulation!",
+                        "Gratulation!",
                         style: TextStyle(
                           fontSize: 28,
                           color: Colors.white,
@@ -333,7 +333,7 @@ void main() async {
                       ),
                       const SizedBox(height: 16),
                       const Text(
-                        "Well played!\nYou taught them a lesson!",
+                        "Gut gespielt!\nDu hast ihnen eine Lektion erteilt!",
                         style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.4),
                         textAlign: TextAlign.center,
                       ),
