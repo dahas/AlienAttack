@@ -139,39 +139,43 @@ void main() async {
                     Row(
                       mainAxisSize: MainAxisSize.max,
                       children: [
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.lightGreenAccent.shade400.withValues(alpha: 0.8),
-                            foregroundColor: Colors.black,
-                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.lightGreenAccent.shade400.withValues(alpha: 0.8),
+                              foregroundColor: Colors.black,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
-                          ),
-                          onPressed: () {
-                            game.start();
-                          },
-                          child: const Text(
-                            'Nochmal',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                            onPressed: () {
+                              game.start();
+                            },
+                            child: const Text(
+                              'Nochmal',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ),
                         SizedBox(width: 8),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal.shade400.withValues(alpha: 0.8),
-                            foregroundColor: Colors.black,
-                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.teal.shade400.withValues(alpha: 0.8),
+                              foregroundColor: Colors.black,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
-                          ),
-                          onPressed: () {
-                            game.quit();
-                          },
-                          child: const Text(
-                            'Beenden',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                            onPressed: () {
+                              game.quit();
+                            },
+                            child: const Text(
+                              'Beenden',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ),
                       ],
@@ -395,7 +399,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
   Vector2? dragStartFinger;
   Vector2? dragStartPlayer;
 
-  final int testProgress = 0;
+  final int testProgress = 3;
 
   late SpawnComponent enemyAlphaSpawner;
   late SpawnComponent enemyBetaSpawner;
@@ -415,14 +419,47 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
 
   late Sprite? bulletSprite;
   late Sprite? asteroid1Sprite;
+  late Sprite? asteroid1Frg1Sprite;
+  late Sprite? asteroid1Frg2Sprite;
+  late Sprite? asteroid1Frg3Sprite;
+  late Sprite? asteroid1Frg4Sprite;
+  late Sprite? asteroid1Frg5Sprite;
   late Sprite? asteroid2Sprite;
+  late Sprite? asteroid2Frg1Sprite;
+  late Sprite? asteroid2Frg2Sprite;
+  late Sprite? asteroid2Frg3Sprite;
+  late Sprite? asteroid2Frg4Sprite;
+  late Sprite? asteroid2Frg5Sprite;
   late Sprite? asteroid3Sprite;
+  late Sprite? asteroid3Frg1Sprite;
+  late Sprite? asteroid3Frg2Sprite;
+  late Sprite? asteroid3Frg3Sprite;
+  late Sprite? asteroid3Frg4Sprite;
+  late Sprite? asteroid3Frg5Sprite;
   late Sprite? asteroid4Sprite;
+  late Sprite? asteroid4Frg1Sprite;
+  late Sprite? asteroid4Frg2Sprite;
+  late Sprite? asteroid4Frg3Sprite;
+  late Sprite? asteroid4Frg4Sprite;
+  late Sprite? asteroid4Frg5Sprite;
   late Sprite? asteroid5Sprite;
+  late Sprite? asteroid5Frg1Sprite;
+  late Sprite? asteroid5Frg2Sprite;
+  late Sprite? asteroid5Frg3Sprite;
+  late Sprite? asteroid5Frg4Sprite;
+  late Sprite? asteroid5Frg5Sprite;
   late Sprite? fireballSprite;
+  late Sprite? bossFrg1Sprite;
+  late Sprite? bossFrg2Sprite;
+  late Sprite? bossFrg3Sprite;
+  late Sprite? bossFrg4Sprite;
+  late Sprite? bossFrg5Sprite;
+  late Sprite? bossFrg6Sprite;
+  late Sprite? bossFrg7Sprite;
 
-  late SpriteAnimation enemyAnimation;
-  late SpriteAnimation sandburstAnimation;
+  late SpriteAnimation? enemyAnimation;
+  late SpriteAnimation? sandburstAnimation;
+  late SpriteAnimation? missile1Animation;
 
   @override
   Future<void> onLoad() async {
@@ -435,32 +472,95 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
       'life_lost.png',
       'life.png',
       'explosion.png',
-      'explosion_asteroid.png',
       'sandburst.png',
       'stars_0.png',
       'stars_1.png',
       'stars_2.png',
       'missile1.png',
       'asteroid1.png',
+      'asteroid1_fragment1.png',
+      'asteroid1_fragment2.png',
+      'asteroid1_fragment3.png',
+      'asteroid1_fragment4.png',
+      'asteroid1_fragment5.png',
       'asteroid2.png',
+      'asteroid2_fragment1.png',
+      'asteroid2_fragment2.png',
+      'asteroid2_fragment3.png',
+      'asteroid2_fragment4.png',
+      'asteroid2_fragment5.png',
       'asteroid3.png',
+      'asteroid3_fragment1.png',
+      'asteroid3_fragment2.png',
+      'asteroid3_fragment3.png',
+      'asteroid3_fragment4.png',
+      'asteroid3_fragment5.png',
       'asteroid4.png',
+      'asteroid4_fragment1.png',
+      'asteroid4_fragment2.png',
+      'asteroid4_fragment3.png',
+      'asteroid4_fragment4.png',
+      'asteroid4_fragment5.png',
       'asteroid5.png',
+      'asteroid5_fragment1.png',
+      'asteroid5_fragment2.png',
+      'asteroid5_fragment3.png',
+      'asteroid5_fragment4.png',
+      'asteroid5_fragment5.png',
       'powerup1.png',
       'powerup2.png',
       'powerup3.png',
       'boss_shadow.png',
       'boss.png',
+      'boss_fragment1.png',
+      'boss_fragment2.png',
+      'boss_fragment3.png',
+      'boss_fragment4.png',
+      'boss_fragment5.png',
+      'boss_fragment6.png',
+      'boss_fragment7.png',
       'fireball.png',
     ]);
 
     bulletSprite = Sprite(images.fromCache("bullet.png"));
     asteroid1Sprite = Sprite(images.fromCache("asteroid1.png"));
+    asteroid1Frg1Sprite = Sprite(images.fromCache("asteroid1_fragment1.png"));
+    asteroid1Frg2Sprite = Sprite(images.fromCache("asteroid1_fragment2.png"));
+    asteroid1Frg3Sprite = Sprite(images.fromCache("asteroid1_fragment3.png"));
+    asteroid1Frg4Sprite = Sprite(images.fromCache("asteroid1_fragment4.png"));
+    asteroid1Frg5Sprite = Sprite(images.fromCache("asteroid1_fragment5.png"));
     asteroid2Sprite = Sprite(images.fromCache("asteroid2.png"));
+    asteroid2Frg1Sprite = Sprite(images.fromCache("asteroid2_fragment1.png"));
+    asteroid2Frg2Sprite = Sprite(images.fromCache("asteroid2_fragment2.png"));
+    asteroid2Frg3Sprite = Sprite(images.fromCache("asteroid2_fragment3.png"));
+    asteroid2Frg4Sprite = Sprite(images.fromCache("asteroid2_fragment4.png"));
+    asteroid2Frg5Sprite = Sprite(images.fromCache("asteroid2_fragment5.png"));
     asteroid3Sprite = Sprite(images.fromCache("asteroid3.png"));
+    asteroid3Frg1Sprite = Sprite(images.fromCache("asteroid3_fragment1.png"));
+    asteroid3Frg2Sprite = Sprite(images.fromCache("asteroid3_fragment2.png"));
+    asteroid3Frg3Sprite = Sprite(images.fromCache("asteroid3_fragment3.png"));
+    asteroid3Frg4Sprite = Sprite(images.fromCache("asteroid3_fragment4.png"));
+    asteroid3Frg5Sprite = Sprite(images.fromCache("asteroid3_fragment5.png"));
     asteroid4Sprite = Sprite(images.fromCache("asteroid4.png"));
+    asteroid4Frg1Sprite = Sprite(images.fromCache("asteroid4_fragment1.png"));
+    asteroid4Frg2Sprite = Sprite(images.fromCache("asteroid4_fragment2.png"));
+    asteroid4Frg3Sprite = Sprite(images.fromCache("asteroid4_fragment3.png"));
+    asteroid4Frg4Sprite = Sprite(images.fromCache("asteroid4_fragment4.png"));
+    asteroid4Frg5Sprite = Sprite(images.fromCache("asteroid4_fragment5.png"));
     asteroid5Sprite = Sprite(images.fromCache("asteroid5.png"));
+    asteroid5Frg1Sprite = Sprite(images.fromCache("asteroid5_fragment1.png"));
+    asteroid5Frg2Sprite = Sprite(images.fromCache("asteroid5_fragment2.png"));
+    asteroid5Frg3Sprite = Sprite(images.fromCache("asteroid5_fragment3.png"));
+    asteroid5Frg4Sprite = Sprite(images.fromCache("asteroid5_fragment4.png"));
+    asteroid5Frg5Sprite = Sprite(images.fromCache("asteroid5_fragment5.png"));
     fireballSprite = Sprite(images.fromCache("fireball.png"));
+    bossFrg1Sprite = Sprite(images.fromCache("boss_fragment1.png"));
+    bossFrg2Sprite = Sprite(images.fromCache("boss_fragment2.png"));
+    bossFrg3Sprite = Sprite(images.fromCache("boss_fragment3.png"));
+    bossFrg4Sprite = Sprite(images.fromCache("boss_fragment4.png"));
+    bossFrg5Sprite = Sprite(images.fromCache("boss_fragment5.png"));
+    bossFrg6Sprite = Sprite(images.fromCache("boss_fragment6.png"));
+    bossFrg7Sprite = Sprite(images.fromCache("boss_fragment7.png"));
 
     enemyAnimation = await loadSpriteAnimation(
       'enemy.png',
@@ -468,7 +568,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
         amount: 2,
         loop: true,
         stepTime: .3,
-        textureSize: Vector2(483, 483),
+        textureSize: Vector2(50, 54),
       ),
     );
 
@@ -479,6 +579,16 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
         loop: false,
         stepTime: .1,
         textureSize: Vector2(50, 50),
+      ),
+    );
+
+    missile1Animation = await loadSpriteAnimation(
+      'missile1.png',
+      SpriteAnimationData.sequenced(
+        amount: 5,
+        loop: true,
+        stepTime: .1,
+        textureSize: Vector2(20, 75),
       ),
     );
 
@@ -818,12 +928,41 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
   void onDispose() {
     SoundManager.dispose();
 
+    enemyAnimation = null;
+    sandburstAnimation = null;
+    missile1Animation = null;
+
     bulletSprite = null;
     asteroid1Sprite = null;
+    asteroid1Frg1Sprite = null;
+    asteroid1Frg2Sprite = null;
+    asteroid1Frg3Sprite = null;
+    asteroid1Frg4Sprite = null;
+    asteroid1Frg5Sprite = null;
     asteroid2Sprite = null;
+    asteroid2Frg1Sprite = null;
+    asteroid2Frg2Sprite = null;
+    asteroid2Frg3Sprite = null;
+    asteroid2Frg4Sprite = null;
+    asteroid2Frg5Sprite = null;
     asteroid3Sprite = null;
+    asteroid3Frg1Sprite = null;
+    asteroid3Frg2Sprite = null;
+    asteroid3Frg3Sprite = null;
+    asteroid3Frg4Sprite = null;
+    asteroid3Frg5Sprite = null;
     asteroid4Sprite = null;
+    asteroid4Frg1Sprite = null;
+    asteroid4Frg2Sprite = null;
+    asteroid4Frg3Sprite = null;
+    asteroid4Frg4Sprite = null;
+    asteroid4Frg5Sprite = null;
     asteroid5Sprite = null;
+    asteroid5Frg1Sprite = null;
+    asteroid5Frg2Sprite = null;
+    asteroid5Frg3Sprite = null;
+    asteroid5Frg4Sprite = null;
+    asteroid5Frg5Sprite = null;
     fireballSprite = null;
 
     super.onDispose();
@@ -1089,15 +1228,7 @@ class EnemyMissile1 extends SpriteAnimationComponent with HasGameReference<Alien
   Future<void> onLoad() async {
     super.onLoad();
 
-    animation = await game.loadSpriteAnimation(
-      'missile1.png',
-      SpriteAnimationData.sequenced(
-        amount: 5,
-        loop: true,
-        stepTime: .1,
-        textureSize: Vector2(100, 375),
-      ),
-    );
+    animation = game.missile1Animation;
 
     add(
       RectangleHitbox(
@@ -1138,50 +1269,50 @@ class Asteroid extends SpriteComponent with HasGameReference<AlienAttack>, Colli
       case 1:
         sprite = game.asteroid1Sprite;
         fragmentSprites = [
-          await game.loadSprite('asteroid1_fragment1.png'),
-          await game.loadSprite('asteroid1_fragment2.png'),
-          await game.loadSprite('asteroid1_fragment3.png'),
-          await game.loadSprite('asteroid1_fragment4.png'),
-          await game.loadSprite('asteroid1_fragment5.png'),
+          ?game.asteroid1Frg1Sprite,
+          ?game.asteroid1Frg2Sprite,
+          ?game.asteroid1Frg3Sprite,
+          ?game.asteroid1Frg4Sprite,
+          ?game.asteroid1Frg5Sprite,
         ];
         break;
       case 2:
         sprite = game.asteroid2Sprite;
         fragmentSprites = [
-          await game.loadSprite('asteroid2_fragment1.png'),
-          await game.loadSprite('asteroid2_fragment2.png'),
-          await game.loadSprite('asteroid2_fragment3.png'),
-          await game.loadSprite('asteroid2_fragment4.png'),
-          await game.loadSprite('asteroid2_fragment5.png'),
+          ?game.asteroid2Frg1Sprite,
+          ?game.asteroid2Frg2Sprite,
+          ?game.asteroid2Frg3Sprite,
+          ?game.asteroid2Frg4Sprite,
+          ?game.asteroid2Frg5Sprite,
         ];
         break;
       case 3:
         sprite = game.asteroid3Sprite;
         fragmentSprites = [
-          await game.loadSprite('asteroid3_fragment1.png'),
-          await game.loadSprite('asteroid3_fragment2.png'),
-          await game.loadSprite('asteroid3_fragment3.png'),
-          await game.loadSprite('asteroid3_fragment4.png'),
-          await game.loadSprite('asteroid3_fragment5.png'),
+          ?game.asteroid3Frg1Sprite,
+          ?game.asteroid3Frg2Sprite,
+          ?game.asteroid3Frg3Sprite,
+          ?game.asteroid3Frg4Sprite,
+          ?game.asteroid3Frg5Sprite,
         ];
         break;
       case 4:
         sprite = game.asteroid4Sprite;
         fragmentSprites = [
-          await game.loadSprite('asteroid4_fragment1.png'),
-          await game.loadSprite('asteroid4_fragment2.png'),
-          await game.loadSprite('asteroid4_fragment3.png'),
-          await game.loadSprite('asteroid4_fragment4.png'),
-          await game.loadSprite('asteroid4_fragment5.png'),
+          ?game.asteroid4Frg1Sprite,
+          ?game.asteroid4Frg2Sprite,
+          ?game.asteroid4Frg3Sprite,
+          ?game.asteroid4Frg4Sprite,
+          ?game.asteroid4Frg5Sprite,
         ];
       default:
         sprite = game.asteroid5Sprite;
         fragmentSprites = [
-          await game.loadSprite('asteroid5_fragment1.png'),
-          await game.loadSprite('asteroid5_fragment2.png'),
-          await game.loadSprite('asteroid5_fragment3.png'),
-          await game.loadSprite('asteroid5_fragment4.png'),
-          await game.loadSprite('asteroid5_fragment5.png'),
+          ?game.asteroid5Frg1Sprite,
+          ?game.asteroid5Frg2Sprite,
+          ?game.asteroid5Frg3Sprite,
+          ?game.asteroid5Frg4Sprite,
+          ?game.asteroid5Frg5Sprite,
         ];
     }
 
@@ -1212,35 +1343,48 @@ class Asteroid extends SpriteComponent with HasGameReference<AlienAttack>, Colli
       SoundManager.playSandburst(volume: .6);
       if (hitCount >= 20) {
         removeFromParent();
-        game.add(ParticleSystemComponent(
-          particle: Particle.generate(
-            count: 5,
-            generator: (i) {
-              final sprite = fragmentSprites[i % fragmentSprites.length];
-              final size = 30.0 + Random().nextDouble() * 20.0;
-              final rotationSpeed = (Random().nextDouble() - 0.5) * 3;
-              return AcceleratedParticle(
-                acceleration: Vector2(0, 50),
-                speed: (Vector2.random() - Vector2.random()) * 400,
-                position: position.clone(),
-                child: RotatingParticle(
-                  from: 0,
-                  to: 2 * pi * rotationSpeed,
-                  child: SpriteParticle(
-                    sprite: sprite,
-                    size: Vector2.all(size),
-                    lifespan: 1.5,
-                  ),
-                ),
-              );
-            },
-        ),
+        game.add(AsteroidParticles(
+          position: position.clone(),
+          fragmentSprites: fragmentSprites,
         ),
         );
         SoundManager.playBurstAsteroid();
       }
     }
   }
+}
+
+class AsteroidParticles extends ParticleSystemComponent {
+  AsteroidParticles({
+    required Vector2 position,
+    required List<Sprite> fragmentSprites,
+  }) : super(
+    position: position,
+    particle: Particle.generate(
+      count: 5,
+      generator: (i) {
+        final random = Random();
+        final sprite = fragmentSprites[i % fragmentSprites.length];
+        final size = 30.0 + random.nextDouble() * 20.0;
+        final rotationSpeed = (random.nextDouble() - 0.5) * 3;
+
+        return AcceleratedParticle(
+          acceleration: Vector2(0, 50),
+          speed: (Vector2.random() - Vector2.random()) * 400,
+          position: Vector2.zero(),
+          child: RotatingParticle(
+            from: 0,
+            to: 2 * pi * rotationSpeed,
+            child: SpriteParticle(
+              sprite: sprite,
+              size: Vector2.all(size),
+              lifespan: 1.5,
+            ),
+          ),
+        );
+      },
+    ),
+  );
 }
 
 class Explosion extends SpriteAnimationComponent with HasGameReference<AlienAttack> {
@@ -1256,7 +1400,7 @@ class Explosion extends SpriteAnimationComponent with HasGameReference<AlienAtta
         amount: 4,
         loop: false,
         stepTime: .1,
-        textureSize: Vector2(320, 320),
+        textureSize: Vector2(100, 100),
       ),
     );
 
@@ -1389,7 +1533,7 @@ class BossIntro extends SpriteAnimationComponent
       'boss_shadow.png',
       SpriteAnimationData.sequenced(
         amount: 1,
-        textureSize: Vector2(600, 600),
+        textureSize: Vector2(300, 300),
         stepTime: 0.1,
       ),
     );
@@ -1420,6 +1564,8 @@ class Boss extends SpriteAnimationComponent
     with HasGameReference<AlienAttack>, CollisionCallbacks {
   final VoidCallback onBossRemoved;
 
+  late List<Sprite> fragmentSprites;
+
   Boss({required this.onBossRemoved}) : super(size: Vector2.all(200));
 
   double maxHealth = 100;
@@ -1428,8 +1574,8 @@ class Boss extends SpriteAnimationComponent
   late BossHealthBar healthBar;
 
   double speedY = 10;
-  double horizontalSpeed = 0;      // aktuelle horizontale Geschwindigkeit
-  double targetSpeed = 0;          // Zielgeschwindigkeit
+  double horizontalSpeed = 0;
+  double targetSpeed = 0;
   double driftTimer = 0;
   double driftDuration = 2;
   double time = 0;
@@ -1443,13 +1589,23 @@ class Boss extends SpriteAnimationComponent
   Future<void> onLoad() async {
     anchor = Anchor.center;
 
+    fragmentSprites = [
+      ?game.bossFrg1Sprite,
+      ?game.bossFrg2Sprite,
+      ?game.bossFrg3Sprite,
+      ?game.bossFrg4Sprite,
+      ?game.bossFrg5Sprite,
+      ?game.bossFrg6Sprite,
+      ?game.bossFrg7Sprite,
+    ];
+
     animation = await game.loadSpriteAnimation(
       'boss.png',
       SpriteAnimationData.sequenced(
         amount: 1,
         loop: true,
         stepTime: 20,
-        textureSize: Vector2(600, 600),
+        textureSize: Vector2(300, 300),
       ),
     );
 
@@ -1472,7 +1628,11 @@ class Boss extends SpriteAnimationComponent
     if (currentHealth <= 0) {
       removeFromParent();
       game.score += 1000;
-      game.add(Explosion(position: position, size: Vector2.all(500)));
+      game.add(BossExplosion(position: position, size: Vector2.all(400)));
+      game.add(BossParticles(
+        position: position.clone(),
+        fragmentSprites: fragmentSprites,
+      ));
       game.spawnCount = 0;
       SoundManager.playExplosionBoss(volume: 1);
       onBossRemoved();
@@ -1547,8 +1707,70 @@ class Boss extends SpriteAnimationComponent
     if (other is PlayerBullet) {
       other.removeFromParent();
       game.add(Explosion(position: intersectionPoints.first, size: Vector2.all(80)));
-      takeDamage(.25);
+      takeDamage(1.25);
     }
+  }
+}
+
+class BossParticles extends ParticleSystemComponent {
+  BossParticles({
+    required Vector2 position,
+    required List<Sprite> fragmentSprites,
+  }) : super(
+    position: position,
+    particle: Particle.generate(
+      count: 7,
+      lifespan: 2,
+      generator: (i) {
+        final random = Random();
+        final sprite = fragmentSprites[i % fragmentSprites.length];
+        final size = 70.0 + random.nextDouble() * 20.0;
+        final rotationSpeed = (random.nextDouble() - 0.5) * 3;
+
+        return AcceleratedParticle(
+          acceleration: Vector2.random() * 100, // Richtung
+          speed: (Vector2.random() - Vector2.random()) * 600,
+          position: Vector2.zero(),
+          child: RotatingParticle(
+            from: 0,
+            to: 2 * pi * rotationSpeed,
+            child: SpriteParticle(
+              sprite: sprite,
+              size: Vector2.all(size),
+              lifespan: 2,
+            ),
+          ),
+        );
+      },
+    ),
+  );
+}
+
+class BossExplosion extends SpriteAnimationComponent with HasGameReference<AlienAttack> {
+  BossExplosion({super.position, super.size})
+      : super(anchor: Anchor.center, priority: 10);
+
+  @override
+  Future<void> onLoad() async {
+
+    animation = await game.loadSpriteAnimation(
+      'explosion_boss.png',
+      SpriteAnimationData.sequenced(
+        amount: 4,
+        loop: false,
+        stepTime: .1,
+        textureSize: Vector2(320, 320),
+      ),
+    );
+
+    animationTicker?.onComplete = removeFromParent;
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+
+    position.y += dt * 40;
   }
 }
 
