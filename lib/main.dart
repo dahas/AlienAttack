@@ -6,7 +6,7 @@ import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
 import 'package:flame/experimental.dart';
 import 'package:flame/input.dart';
-import 'package:flame_audio/flame_audio.dart';
+import 'package:flame/particles.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'package:flame/components.dart';
@@ -66,16 +66,16 @@ void main() async {
                     ),
                     const SizedBox(height: 16),
                     const Text(
-                      "Your mission: Survive the enemy waves and defeat the final boss!",
+                      "Überlebe die feindlichen Angriffe und besiege den finalen Boss!",
                       style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.4),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
                     const Text(
-                      "Controls:\n\n"
-                          "WASD = steer\nSpace = shoot\n"
-                          "P = pause\nEsc = exit\n\n"
-                          "Or use Mouse/Finger",
+                      "Steuerung:\n\n"
+                          "WASD = Bewegen\nSpace = Schießen\n"
+                          "P = Pause\nEsc = Abbrechen\n\n"
+                          "Oder benutze die Maus/den Finger",
                       style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.4),
                       textAlign: TextAlign.center,
                     ),
@@ -152,7 +152,7 @@ void main() async {
                             game.start();
                           },
                           child: const Text(
-                            'Try again',
+                            'Nochmal',
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -170,7 +170,7 @@ void main() async {
                             game.quit();
                           },
                           child: const Text(
-                            'Quit',
+                            'Beenden',
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -203,7 +203,7 @@ void main() async {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    "☕ Paused ☕",
+                    "☕ Pausiert ☕",
                     style: TextStyle(
                       fontSize: 28,
                       color: Colors.white,
@@ -213,52 +213,10 @@ void main() async {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    "Press P again to continue ...",
+                    "Drücke P um weiterzumachen ...",
                     style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.4),
                     textAlign: TextAlign.center
                   ),
-                  // Row(
-                  //   mainAxisSize: MainAxisSize.max,
-                  //   children: [
-                  //     ElevatedButton(
-                  //       style: ElevatedButton.styleFrom(
-                  //         backgroundColor: Colors.lightGreenAccent.shade400.withValues(alpha: 0.8),
-                  //         foregroundColor: Colors.black,
-                  //         padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                  //         shape: RoundedRectangleBorder(
-                  //           borderRadius: BorderRadius.circular(12),
-                  //         ),
-                  //       ),
-                  //       onPressed: () {
-                  //         game.overlays.remove('GameOver');
-                  //         game.start();
-                  //       },
-                  //       child: const Text(
-                  //         'Try again',
-                  //         style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  //       ),
-                  //     ),
-                  //     SizedBox(width: 8),
-                  //     ElevatedButton(
-                  //       style: ElevatedButton.styleFrom(
-                  //         backgroundColor: Colors.teal.shade400.withValues(alpha: 0.8),
-                  //         foregroundColor: Colors.black,
-                  //         padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                  //         shape: RoundedRectangleBorder(
-                  //           borderRadius: BorderRadius.circular(12),
-                  //         ),
-                  //       ),
-                  //       onPressed: () {
-                  //         game.overlays.remove('GameOver');
-                  //         game.quit();
-                  //       },
-                  //       child: const Text(
-                  //         'Quit',
-                  //         style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  //       ),
-                  //     ),
-                  //   ],
-                  // )
                 ],
               ),
             ),
@@ -270,7 +228,7 @@ void main() async {
               child: Align(
                 alignment: Alignment(0, -.4),
                 child: Text(
-                  "Ready?",
+                  "Bereit? 👽",
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.amberAccent,
@@ -287,7 +245,7 @@ void main() async {
               child: Align(
                 alignment: Alignment(0, -.4),
                 child: Text(
-                  "Not bad!",
+                  "Weiter so! 😎",
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.amberAccent,
@@ -304,7 +262,7 @@ void main() async {
               child: Align(
                 alignment: Alignment(0, -.4),
                 child: Text(
-                  "They are not amused!",
+                  "Sie haben schon die Hose voll! 💩",
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.amberAccent,
@@ -321,7 +279,7 @@ void main() async {
               child: Align(
                 alignment: Alignment(0, -.4),
                 child: Text(
-                  "They called mommy!",
+                  "Jetzt kommt ihre Mama! 😄",
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.amberAccent,
@@ -446,6 +404,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
 
   int score = 0;
   int lifes = 3;
+
   bool started = false;
   int currentWave = 0;
   int spawnCount = 0;
@@ -476,6 +435,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
       'life_lost.png',
       'life.png',
       'explosion.png',
+      'explosion_asteroid.png',
       'sandburst.png',
       'stars_0.png',
       'stars_1.png',
@@ -821,10 +781,10 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
   void pause() {
     paused = !paused; // Toggle
     if(paused) {
-      FlameAudio.bgm.pause();
+      SoundManager.pauseBackgroundMusic();
       overlays.add("Paused");
     } else {
-      FlameAudio.bgm.resume();
+      SoundManager.resumeBackgroundMusic();
       overlays.remove("Paused");
     }
   }
@@ -1162,6 +1122,10 @@ class Asteroid extends SpriteComponent with HasGameReference<AlienAttack>, Colli
   final double speed;
   final Vector2 direction;
 
+  int hitCount = 0;
+
+  late List<Sprite> fragmentSprites;
+
   Asteroid({
     required this.speed,
     required this.direction,
@@ -1171,11 +1135,54 @@ class Asteroid extends SpriteComponent with HasGameReference<AlienAttack>, Colli
   Future<void> onLoad() async {
     final int randomNumber = Random().nextInt(5);
     switch(randomNumber) {
-      case 1: sprite = game.asteroid1Sprite; break;
-      case 2: sprite = game.asteroid2Sprite; break;
-      case 3: sprite = game.asteroid3Sprite; break;
-      case 4: sprite = game.asteroid4Sprite; break;
-      default: sprite = game.asteroid5Sprite; break;
+      case 1:
+        sprite = game.asteroid1Sprite;
+        fragmentSprites = [
+          await game.loadSprite('asteroid1_fragment1.png'),
+          await game.loadSprite('asteroid1_fragment2.png'),
+          await game.loadSprite('asteroid1_fragment3.png'),
+          await game.loadSprite('asteroid1_fragment4.png'),
+          await game.loadSprite('asteroid1_fragment5.png'),
+        ];
+        break;
+      case 2:
+        sprite = game.asteroid2Sprite;
+        fragmentSprites = [
+          await game.loadSprite('asteroid2_fragment1.png'),
+          await game.loadSprite('asteroid2_fragment2.png'),
+          await game.loadSprite('asteroid2_fragment3.png'),
+          await game.loadSprite('asteroid2_fragment4.png'),
+          await game.loadSprite('asteroid2_fragment5.png'),
+        ];
+        break;
+      case 3:
+        sprite = game.asteroid3Sprite;
+        fragmentSprites = [
+          await game.loadSprite('asteroid3_fragment1.png'),
+          await game.loadSprite('asteroid3_fragment2.png'),
+          await game.loadSprite('asteroid3_fragment3.png'),
+          await game.loadSprite('asteroid3_fragment4.png'),
+          await game.loadSprite('asteroid3_fragment5.png'),
+        ];
+        break;
+      case 4:
+        sprite = game.asteroid4Sprite;
+        fragmentSprites = [
+          await game.loadSprite('asteroid4_fragment1.png'),
+          await game.loadSprite('asteroid4_fragment2.png'),
+          await game.loadSprite('asteroid4_fragment3.png'),
+          await game.loadSprite('asteroid4_fragment4.png'),
+          await game.loadSprite('asteroid4_fragment5.png'),
+        ];
+      default:
+        sprite = game.asteroid5Sprite;
+        fragmentSprites = [
+          await game.loadSprite('asteroid5_fragment1.png'),
+          await game.loadSprite('asteroid5_fragment2.png'),
+          await game.loadSprite('asteroid5_fragment3.png'),
+          await game.loadSprite('asteroid5_fragment4.png'),
+          await game.loadSprite('asteroid5_fragment5.png'),
+        ];
     }
 
     add(CircleHitbox(
@@ -1199,9 +1206,39 @@ class Asteroid extends SpriteComponent with HasGameReference<AlienAttack>, Colli
     super.onCollisionStart(intersectionPoints, other);
 
     if(other is PlayerBullet) {
+      hitCount++;
       other.removeFromParent();
       game.add(SandBurst(position: intersectionPoints.first, size: Vector2.all(30)));
       SoundManager.playSandburst(volume: .6);
+      if (hitCount >= 20) {
+        removeFromParent();
+        game.add(ParticleSystemComponent(
+          particle: Particle.generate(
+            count: 5,
+            generator: (i) {
+              final sprite = fragmentSprites[i % fragmentSprites.length];
+              final size = 30.0 + Random().nextDouble() * 20.0;
+              final rotationSpeed = (Random().nextDouble() - 0.5) * 3;
+              return AcceleratedParticle(
+                acceleration: Vector2(0, 50),
+                speed: (Vector2.random() - Vector2.random()) * 400,
+                position: position.clone(),
+                child: RotatingParticle(
+                  from: 0,
+                  to: 2 * pi * rotationSpeed,
+                  child: SpriteParticle(
+                    sprite: sprite,
+                    size: Vector2.all(size),
+                    lifespan: 1.5,
+                  ),
+                ),
+              );
+            },
+        ),
+        ),
+        );
+        SoundManager.playBurstAsteroid();
+      }
     }
   }
 }

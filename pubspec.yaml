@@ -63,6 +63,7 @@ flutter:
     - assets/images/bullet.png
     - assets/images/enemy.png
     - assets/images/explosion.png
+    - assets/images/explosion_asteroid.png
     - assets/images/sandburst.png
     - assets/images/stars_0.png
     - assets/images/stars_1.png
@@ -75,6 +76,31 @@ flutter:
     - assets/images/asteroid3.png
     - assets/images/asteroid4.png
     - assets/images/asteroid5.png
+    - assets/images/asteroid1_fragment1.png
+    - assets/images/asteroid1_fragment2.png
+    - assets/images/asteroid1_fragment3.png
+    - assets/images/asteroid1_fragment4.png
+    - assets/images/asteroid1_fragment5.png
+    - assets/images/asteroid2_fragment1.png
+    - assets/images/asteroid2_fragment2.png
+    - assets/images/asteroid2_fragment3.png
+    - assets/images/asteroid2_fragment4.png
+    - assets/images/asteroid2_fragment5.png
+    - assets/images/asteroid3_fragment1.png
+    - assets/images/asteroid3_fragment2.png
+    - assets/images/asteroid3_fragment3.png
+    - assets/images/asteroid3_fragment4.png
+    - assets/images/asteroid3_fragment5.png
+    - assets/images/asteroid4_fragment1.png
+    - assets/images/asteroid4_fragment2.png
+    - assets/images/asteroid4_fragment3.png
+    - assets/images/asteroid4_fragment4.png
+    - assets/images/asteroid4_fragment5.png
+    - assets/images/asteroid5_fragment1.png
+    - assets/images/asteroid5_fragment2.png
+    - assets/images/asteroid5_fragment3.png
+    - assets/images/asteroid5_fragment4.png
+    - assets/images/asteroid5_fragment5.png
     - assets/images/powerup1.png
     - assets/images/powerup2.png
     - assets/images/powerup3.png
@@ -91,6 +117,7 @@ flutter:
     - assets/audio/explosionPlayer.wav
     - assets/audio/sandburst.wav
     - assets/audio/fireballs.wav
+    - assets/audio/burst.wav
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

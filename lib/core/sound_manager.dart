@@ -5,6 +5,8 @@ class SoundManager {
   static AudioPool? _sandburstPool;
   static AudioPool? _fireballsPool;
 
+  static AudioPlayer? _bgmPlayer;
+
   static String? _backgroundMusic;
 
   static String? _powerUp1;
@@ -13,6 +15,7 @@ class SoundManager {
 
   static String? _explosionPlayer;
   static String? _explosionBoss;
+  static String? _burstAsteroid;
 
   static Future<void> init() async {
     await FlameAudio.audioCache.loadAll([
@@ -26,9 +29,8 @@ class SoundManager {
       'explosionPlayer.wav',
       'sandburst.wav',
       'fireballs.wav',
+      'burst.wav',
     ]);
-
-    await FlameAudio.bgm.initialize();
 
     _explosionEnemyPool ??= await FlameAudio.createPool('explosionEnemy.wav', maxPlayers: 4);
     _sandburstPool ??= await FlameAudio.createPool('sandburst.wav', maxPlayers: 4);
@@ -42,16 +44,23 @@ class SoundManager {
 
     _explosionPlayer = "explosionPlayer.wav";
     _explosionBoss = "explosionBoss.wav";
+    _burstAsteroid = "burst.wav";
   }
 
-  static void playBackgroundMusic({double volume = 1}) {
-    if (!FlameAudio.bgm.isPlaying) {
-      FlameAudio.bgm.play(_backgroundMusic!, volume: volume);
-    }
+  static void playBackgroundMusic({double volume = 1}) async {
+    _bgmPlayer ??= await FlameAudio.loop(_backgroundMusic!, volume: volume);
+  }
+
+  static void pauseBackgroundMusic() {
+    _bgmPlayer?.pause();
+  }
+
+  static void resumeBackgroundMusic() {
+    _bgmPlayer?.resume();
   }
 
   static void playSandburst({double volume = 1}) {
-  _sandburstPool?.start(volume: volume);
+    _sandburstPool?.start(volume: volume);
   }
 
   static void playExplosionEnemy({double volume = 1}) {
@@ -82,18 +91,25 @@ class SoundManager {
     FlameAudio.play(_explosionBoss!, volume: volume);
   }
 
+  static void playBurstAsteroid({double volume = 1}) {
+    FlameAudio.play(_burstAsteroid!, volume: volume);
+  }
+
   static void dispose() {
     _sandburstPool?.dispose();
     _explosionEnemyPool?.dispose();
     _fireballsPool?.dispose();
+    _bgmPlayer?.dispose();
     _sandburstPool = null;
     _explosionEnemyPool = null;
     _fireballsPool = null;
+    _bgmPlayer = null;
 
     _powerUp1 = null;
     _powerUp2 = null;
     _powerUp3 = null;
     _explosionPlayer = null;
     _explosionBoss = null;
+    _burstAsteroid = null;
   }
 }
