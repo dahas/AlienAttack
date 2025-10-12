@@ -349,7 +349,7 @@ void main() async {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.lightGreenAccent.shade400.withValues(alpha: 0.8),
                               foregroundColor: Colors.black,
-                              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -358,7 +358,7 @@ void main() async {
                               game.start();
                             },
                             child: const Text(
-                              'New game',
+                              'Neues Spiel',
                               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                             ),
                           ),
@@ -367,7 +367,7 @@ void main() async {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.teal.shade400.withValues(alpha: 0.8),
                               foregroundColor: Colors.black,
-                              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -376,7 +376,7 @@ void main() async {
                               game.quit();
                             },
                             child: const Text(
-                              'Quit',
+                              'Beenden',
                               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                             ),
                           ),
@@ -399,7 +399,7 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
   Vector2? dragStartFinger;
   Vector2? dragStartPlayer;
 
-  final int testProgress = 3;
+  final int testProgress = 0;
 
   late SpawnComponent enemyAlphaSpawner;
   late SpawnComponent enemyBetaSpawner;
@@ -1707,7 +1707,7 @@ class Boss extends SpriteAnimationComponent
     if (other is PlayerBullet) {
       other.removeFromParent();
       game.add(Explosion(position: intersectionPoints.first, size: Vector2.all(80)));
-      takeDamage(1.25);
+      takeDamage(.25);
     }
   }
 }
