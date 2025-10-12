@@ -91,7 +91,7 @@ class SoundManager {
     FlameAudio.play(_explosionBoss!, volume: volume);
   }
 
-  static void playBurstAsteroid({double volume = 1}) {
+  static void playBurstAsteroid({double volume = .6}) {
     FlameAudio.play(_burstAsteroid!, volume: volume);
   }
 

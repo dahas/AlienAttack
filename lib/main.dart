@@ -345,39 +345,43 @@ void main() async {
                       Row(
                         mainAxisSize: MainAxisSize.max,
                         children: [
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.lightGreenAccent.shade400.withValues(alpha: 0.8),
-                              foregroundColor: Colors.black,
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.lightGreenAccent.shade400.withValues(alpha: 0.8),
+                                foregroundColor: Colors.black,
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
-                            ),
-                            onPressed: () {
-                              game.start();
-                            },
-                            child: const Text(
-                              'Neues Spiel',
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                              onPressed: () {
+                                game.start();
+                              },
+                              child: const Text(
+                                'Neues Spiel',
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                              ),
                             ),
                           ),
                           SizedBox(width: 8),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.teal.shade400.withValues(alpha: 0.8),
-                              foregroundColor: Colors.black,
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.teal.shade400.withValues(alpha: 0.8),
+                                foregroundColor: Colors.black,
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
-                            ),
-                            onPressed: () {
-                              game.quit();
-                            },
-                            child: const Text(
-                              'Beenden',
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                              onPressed: () {
+                                game.quit();
+                              },
+                              child: const Text(
+                                'Beenden',
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                              ),
                             ),
                           ),
                         ],
