@@ -20,177 +20,222 @@ import 'overlays/hud.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-  runApp(
-    GameWidget(
-      game: AlienAttack(),
+
+  runApp(const AlienApp());
+}
+
+class AlienApp extends StatefulWidget {
+  const AlienApp({super.key});
+
+  @override
+  State<AlienApp> createState() => _AlienAppState();
+}
+
+class _AlienAppState extends State<AlienApp> {
+  bool _gameReady = false;
+  late AlienAttack _game;
+
+  @override
+  void initState() {
+    super.initState();
+    _initGame();
+  }
+
+  Future<void> _initGame() async {
+    await SpriteManager.loadAll();
+    await SoundManager.init();
+
+    _game = AlienAttack();
+
+    // Warte minimal, um den Splash sichtbar zu halten
+    await Future.delayed(const Duration(seconds: 2));
+
+    setState(() {
+      _gameReady = true;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_gameReady) {
+      return const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: SplashScreen(),
+      );
+    }
+
+    return GameWidget(
+      game: _game,
       overlayBuilderMap: {
         'StartMenu': (BuildContext context, AlienAttack game) {
           return Visibility(
-            visible: !game.paused,
-            child: Center(
-              child: Container(
-                width: 320,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: .6),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white24, width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black54,
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      "🛸",
-                      style: TextStyle(
-                        fontSize: 36,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      "ALIEN ATTACK",
-                      style: TextStyle(
-                        fontSize: 28,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      "Überlebe die feindlichen Angriffe und besiege den finalen Boss!",
-                      style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.4),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      "Steuerung:\n\n"
-                          "WASD = Bewegen\nSpace = Schießen\n"
-                          "P = Pause\nEsc = Abbrechen\n\n"
-                          "Oder benutze die Maus/den Finger",
-                      style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.4),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.lightGreenAccent.shade400.withValues(alpha: 0.8),
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+              visible: !game.paused,
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Container(
+                    width: 320,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: .6),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white24, width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black54,
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
                         ),
-                      ),
-                      onPressed: () {
-                        game.overlays.remove('StartMenu');
-                        game.start();
-                      },
-                      child: const Text(
-                        'Play',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
+                      ],
                     ),
-                    const SizedBox(height: 24),
-                    const Text(
-                      "Demo © 2025 martinwolf.info",
-                      style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.4),
-                      textAlign: TextAlign.center,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          "🛸",
+                          style: TextStyle(
+                            fontSize: 36,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          "ALIEN ATTACK",
+                          style: TextStyle(
+                            fontSize: 28,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          "Überlebe die feindlichen Angriffe und besiege den finalen Boss!",
+                          style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.4),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          "Steuerung:\n\n"
+                              "WASD = Bewegen\nSpace = Schießen\n"
+                              "P = Pause\nEsc = Abbrechen\n\n"
+                              "Oder benutze die Maus/den Finger",
+                          style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.4),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.lightGreenAccent.shade400.withValues(alpha: 0.8),
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            game.overlays.remove('StartMenu');
+                            game.start();
+                          },
+                          child: const Text(
+                            'Play',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        const Text(
+                          "Demo © 2025 martinwolf.info",
+                          style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.4),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            )
+              )
           );
         },
         'GameOver': (BuildContext context, AlienAttack game) {
           return Visibility(
-            visible: !game.paused,
-            child: Center(
-              child: Container(
-                width: 320,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: .6),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white24, width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black54,
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      "💥 Game over! 💥",
-                      style: TextStyle(
-                        fontSize: 28,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+              visible: !game.paused,
+              child: Center(
+                child: Container(
+                  width: 320,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: .6),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white24, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black54,
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.lightGreenAccent.shade400.withValues(alpha: 0.8),
-                              foregroundColor: Colors.black,
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        "💥 Game over! 💥",
+                        style: TextStyle(
+                          fontSize: 28,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.lightGreenAccent.shade400.withValues(alpha: 0.8),
+                                foregroundColor: Colors.black,
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              onPressed: () {
+                                game.start();
+                              },
+                              child: const Text(
+                                'Nochmal',
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                               ),
                             ),
-                            onPressed: () {
-                              game.start();
-                            },
-                            child: const Text(
-                              'Nochmal',
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                            ),
                           ),
-                        ),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.teal.shade400.withValues(alpha: 0.8),
-                              foregroundColor: Colors.black,
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.teal.shade400.withValues(alpha: 0.8),
+                                foregroundColor: Colors.black,
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              onPressed: () {
+                                game.quit();
+                              },
+                              child: const Text(
+                                'Beenden',
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                               ),
                             ),
-                            onPressed: () {
-                              game.quit();
-                            },
-                            child: const Text(
-                              'Beenden',
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                            ),
                           ),
-                        ),
-                      ],
-                    )
-                  ],
+                        ],
+                      )
+                    ],
+                  ),
                 ),
-              ),
-            )
+              )
           );
         },
         'Paused': (BuildContext context, AlienAttack game) {
@@ -224,9 +269,9 @@ void main() async {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    "Drücke P um weiterzumachen ...",
-                    style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.4),
-                    textAlign: TextAlign.center
+                      "Drücke P um weiterzumachen ...",
+                      style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.4),
+                      textAlign: TextAlign.center
                   ),
                 ],
               ),
@@ -256,7 +301,7 @@ void main() async {
               child: Align(
                 alignment: Alignment(0, -.4),
                 child: Text(
-                  "Weiter so! 👍",
+                  "Läuft bei Dir! 👍",
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.amberAccent,
@@ -400,9 +445,36 @@ void main() async {
           );
         },
       },
-    ),
-  );
+    );
+  }
 }
+
+class SplashScreen extends StatelessWidget {
+  const SplashScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Color.fromRGBO(12, 21, 32, 255),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset('assets/images/boss.png', width: 200),
+            const SizedBox(height: 32),
+            const CircularProgressIndicator(color: Colors.cyanAccent),
+            const SizedBox(height: 12),
+            const Text(
+              'Momentchen ...',
+              style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.4),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 
 class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisionDetection {
   late Player player;
@@ -433,10 +505,6 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
     await SoundManager.init();
     await SpriteManager.loadAll();
 
-    player = Player();
-
-    overlays.add("StartMenu");
-
     final parallax = await loadParallaxComponent(
       [
         ParallaxImageData('stars_0.png'),
@@ -454,6 +522,11 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
     camera.viewfinder.anchor = Anchor.topLeft;
     camera.viewport.removeWhere((c) => c is Hud); // Remove!
     camera.viewport.add(Hud());
+
+    player = Player();
+
+    overlays.remove('Loading');
+    overlays.add("StartMenu");
   }
 
   @override
@@ -771,6 +844,48 @@ class AlienAttack extends FlameGame with KeyboardEvents, PanDetector, HasCollisi
     SpriteManager.dispose();
 
     super.onDispose();
+  }
+}
+
+class LoadingGame extends FlameGame {
+  double progress = 0.0;
+  late TextComponent progressText;
+  late RectangleComponent progressBar;
+
+  @override
+  Future<void> onLoad() async {
+    add(progressBar = RectangleComponent(
+      position: Vector2(size.x / 4, size.y / 2),
+      size: Vector2(0, 20),
+      paint: Paint()..color = Colors.blue,
+    ));
+
+    add(progressText = TextComponent(
+      text: "Lade...",
+      position: Vector2(size.x / 2, size.y / 2 - 30),
+      anchor: Anchor.center,
+      textRenderer: TextPaint(style: const TextStyle(color: Colors.white)),
+    ));
+
+    await _loadAssets();
+  }
+
+  Future<void> _loadAssets() async {
+    int assetsSize = 2;
+    for (int i = 0; i < assetsSize; i++) {
+      await SoundManager.init();
+      await SpriteManager.loadAll();
+      progress = (i + 1) / assetsSize;
+      _updateProgressBar();
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+
+    AlienAttack();
+  }
+
+  void _updateProgressBar() {
+    progressBar.size = Vector2(size.x / 2 * progress, 20);
+    progressText.text = "Lade... ${(progress * 100).toInt()}%";
   }
 }
 
