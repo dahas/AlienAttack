@@ -2,6 +2,10 @@ import 'package:flame/components.dart';
 import 'package:flame/flame.dart';
 
 class SpriteManager {
+  static late String? parallax0;
+  static late String? parallax1;
+  static late String? parallax2;
+
   static late Sprite? bulletSprite;
   static late Sprite? asteroid1Sprite;
   static late Sprite? asteroid1Frg1Sprite;
@@ -48,6 +52,9 @@ class SpriteManager {
 
   static Future<void> loadAll() async {
     await Flame.images.loadAll([
+      'stars_0.png',
+      'stars_1.png',
+      'stars_2.png',
       'player.png',
       'bullet.png',
       'enemy.png',
@@ -55,9 +62,6 @@ class SpriteManager {
       'life.png',
       'explosion.png',
       'sandburst.png',
-      'stars_0.png',
-      'stars_1.png',
-      'stars_2.png',
       'missile1.png',
       'asteroid1.png',
       'asteroid1_fragment1.png',
@@ -104,6 +108,9 @@ class SpriteManager {
       'fireball.png',
     ]);
 
+    parallax0 = "stars_0.png";
+    parallax1 = "stars_1.png";
+    parallax2 = "stars_2.png";
     bulletSprite = Sprite(Flame.images.fromCache("bullet.png"));
     asteroid1Sprite = Sprite(Flame.images.fromCache("asteroid1.png"));
     asteroid1Frg1Sprite = Sprite(Flame.images.fromCache("asteroid1_fragment1.png"));
@@ -180,6 +187,9 @@ class SpriteManager {
     sandburstAnimation = null;
     missile1Animation = null;
 
+    parallax0 = null;
+    parallax1 = null;
+    parallax2 = null;
     bulletSprite = null;
     asteroid1Sprite = null;
     asteroid1Frg1Sprite = null;

@@ -1,8 +1,8 @@
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
-import '../main.dart';
+import '../core/my_game.dart';
 
-class Hud extends PositionComponent with HasGameReference<AlienAttack> {
+class Hud extends PositionComponent with HasGameReference<MyGame> {
   Hud({
     super.position,
     super.size,
@@ -55,7 +55,7 @@ enum LifesState {
 }
 
 class PlayerLifesComponent extends SpriteGroupComponent<LifesState>
-    with HasGameReference<AlienAttack> {
+    with HasGameReference<MyGame> {
   final int lifesNumber;
 
   PlayerLifesComponent({
